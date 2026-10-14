@@ -27,7 +27,7 @@ CREATE TABLE locations (
     address TEXT,
     latitude DECIMAL(10, 6),
     longitude DECIMAL(11, 6),
-    visit_order INTEGER CHECK (visit_order > 0),
+    visit_order INTEGER NOT NULL CHECK (visit_order > 0),
     arrival_date TIMESTAMP WITH TIME ZONE,
     departure_date TIMESTAMP WITH TIME ZONE,
     budget DECIMAL(10,2),
@@ -43,7 +43,7 @@ CREATE TABLE locations (
 
 -- Trigger to auto-assign visit_order for new locations
 CREATE OR REPLACE FUNCTION assign_location_order()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
     -- If visit_order not provided, auto-assign next available
     IF NEW.visit_order IS NULL THEN
@@ -54,7 +54,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$ language 'plpgsql';
+$$ language 'plpgsql';
 
 CREATE TRIGGER auto_assign_location_order
     BEFORE INSERT ON locations

@@ -92,3 +92,51 @@ DELETE /api/locations/{id}                 # Delete location
    hurl --test .\tests\ --variables-file .\tests\variables.properties
 ```
 
+
+
+# Реалізація (Python + FastAPI + PostgreSQL)
+
+## Стек
+* **Python 3.11+**, **FastAPI** — веб-фреймворк, автоматична документація на `/docs`
+* **Uvicorn** — ASGI-сервер
+* **psycopg 3** (+ `psycopg_pool`) — драйвер PostgreSQL, «чистий» SQL з параметрами (без ORM)
+* **Pydantic** — валідація вхідних даних
+* **PostgreSQL 16/17**, **Hurl** — тести
+
+## Структура
+```
+app/
+  main.py             — створення FastAPI, підключення роутерів, заголовки безпеки
+  config.py           — налаштування з .env
+  database.py         — пул з'єднань з PostgreSQL
+  schemas.py          — Pydantic-моделі (валідація запитів)
+  errors.py           — єдиний формат помилок, коди 400/404/409/500
+  utils.py            — перетворення рядків БД у JSON, безпечна побудова SET
+  routers/
+    travel_plans.py   — /api/travel-plans (optimistic locking)
+    locations.py      — локації (автонумерація з блокуванням плану)
+    health.py         — /health
+docs/                 — схема БД, Swagger
+tests/                — Hurl-тести + concurrency_test.py (справжні паралельні запити)
+init_db.py            — створення таблиць зі schema.sql
+run.py                — запуск сервера
+```
+
+## Запуск (Windows)
+```
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env        (і вписати пароль від PostgreSQL)
+python init_db.py
+python run.py
+```
+Тести (в іншому терміналі):
+```
+hurl --test .\tests\ --variables-file .\tests\variables.properties
+python tests\concurrency_test.py
+```
+
+## Виправлення в шаблоні
+* `docs/schema.sql`: у функції `assign_location_order` було `$` замість `$$` — скрипт не виконувався.
+* `docs/schema.sql`: `visit_order` отримав `NOT NULL` (як у `schema.mermeid`).
