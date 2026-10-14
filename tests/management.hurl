@@ -31,6 +31,7 @@ location1_id: jsonpath "$.id"
 [Asserts]
 jsonpath "$.name" == "Eiffel Tower"
 jsonpath "$.visit_order" == 1
+jsonpath "$.version" == 1
 jsonpath "$.travel_plan_id" == "{{location_plan_id}}"
 
 # Test 2: Add second location (should be auto-ordered as 2)
@@ -84,11 +85,13 @@ Content-Type: application/json
 {
   "name": "Eiffel Tower (Night Visit)",
   "budget": 30.00,
-  "notes": "Amazing night illumination"
+  "notes": "Amazing night illumination",
+  "version": 1
 }
 
 HTTP 200
 [Asserts]
+jsonpath "$.version" == 2
 jsonpath "$.name" == "Eiffel Tower (Night Visit)"
 jsonpath "$.budget" == 30.00
 jsonpath "$.notes" == "Amazing night illumination"

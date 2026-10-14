@@ -140,3 +140,16 @@ python tests\concurrency_test.py
 ## Виправлення в шаблоні
 * `docs/schema.sql`: у функції `assign_location_order` було `$` замість `$$` — скрипт не виконувався.
 * `docs/schema.sql`: `visit_order` отримав `NOT NULL` (як у `schema.mermeid`).
+* Swagger: `ConflictResponse.required` містив `currentVersion`, а тести перевіряють `current_version`; адреса сервера 3000, а тести — 4567.
+
+## Optimistic locking для локацій («І в раю муха сяде»)
+Обрано варіант **(а)** — власна `version` у кожної локації.
+* `docs/schema.sql` — у `locations` додано `version` та `updated_at` (+ тригер);
+  для вже створеної бази — `docs/migrations/001_location_versioning.sql`.
+* `PUT /api/locations/{id}` тепер вимагає `version`; застаріла версія → **409 Conflict** з `current_version`.
+* При зміні `visit_order` (обмін місцями) версія підвищується в обох локацій.
+* Тести: `management.hurl`, `validation.hurl` (поле `version`, нові тести 24a/24b),
+  `race-conditions.hurl` (Strategy 4 — конфлікт оновлень локації, Strategy 5 — перестановка).
+* Swagger: `version`/`updated_at` у `Location`, `version`/`visit_order` в `UpdateLocationRequest`,
+  відповідь 409 для `PUT /api/locations/{id}`, виправлено `currentVersion` → `current_version`
+  та адресу сервера (4567).

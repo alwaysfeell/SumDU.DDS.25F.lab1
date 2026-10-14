@@ -4,7 +4,7 @@ from fastapi import APIRouter, Response
 from psycopg import sql
 
 from app.database import pool
-from app.errors import not_found
+from app.errors import not_found, version_conflict
 from app.schemas import LocationCreate, LocationUpdate
 from app.utils import set_clause, to_json
 
@@ -12,7 +12,7 @@ router = APIRouter(tags=["Locations"])
 
 LOCATION_COLUMNS = (
     "id, travel_plan_id, name, address, latitude, longitude, visit_order, "
-    "arrival_date, departure_date, budget, notes, created_at"
+    "arrival_date, departure_date, budget, notes, version, created_at, updated_at"
 )
 
 
@@ -38,32 +38,39 @@ def add_location(plan_id: UUID, body: LocationCreate):
     return to_json(row)
 
 
-def _move_location(conn, location: dict, new_order: int) -> None:
-    conn.execute("SELECT 1 FROM travel_plans WHERE id = %s FOR UPDATE", (location["travel_plan_id"],))
-    old_order = conn.execute(
-        "SELECT visit_order FROM locations WHERE id = %s", (location["id"],)
-    ).fetchone()["visit_order"]
+def _move_location(conn, location_id: UUID, plan_id: UUID, new_order: int, expected_version: int) -> None:
+    conn.execute("SELECT 1 FROM travel_plans WHERE id = %s FOR UPDATE", (plan_id,))
+    current = conn.execute(
+        "SELECT visit_order, version FROM locations WHERE id = %s FOR UPDATE", (location_id,)
+    ).fetchone()
+    if current is None:
+        raise not_found("Location")
+    if current["version"] != expected_version:
+        raise version_conflict("location", current["version"])
+
+    old_order = current["visit_order"]
     if old_order == new_order:
         return
     occupant = conn.execute(
         "SELECT id FROM locations WHERE travel_plan_id = %s AND visit_order = %s",
-        (location["travel_plan_id"], new_order),
+        (plan_id, new_order),
     ).fetchone()
     if occupant is not None:
         conn.execute(
             """UPDATE locations SET visit_order =
                    (SELECT MAX(visit_order) + 1 FROM locations WHERE travel_plan_id = %s)
                WHERE id = %s""",
-            (location["travel_plan_id"], location["id"]),
+            (plan_id, location_id),
         )
         conn.execute(
-            "UPDATE locations SET visit_order = %s WHERE id = %s", (old_order, occupant["id"])
+            "UPDATE locations SET visit_order = %s, version = version + 1 WHERE id = %s",
+            (old_order, occupant["id"]),
         )
 
 
 @router.put("/api/locations/{location_id}")
 def update_location(location_id: UUID, body: LocationUpdate):
-    data = body.model_dump(exclude_unset=True)
+    data = body.model_dump(exclude_unset=True, exclude={"version"})
 
     with pool.connection() as conn:
         location = conn.execute(
@@ -73,20 +80,26 @@ def update_location(location_id: UUID, body: LocationUpdate):
             raise not_found("Location")
 
         if "visit_order" in data:
-            _move_location(conn, location, data["visit_order"])
+            _move_location(conn, location_id, location["travel_plan_id"],
+                           data["visit_order"], body.version)
 
-        if not data:
-            row = conn.execute(
-                f"SELECT {LOCATION_COLUMNS} FROM locations WHERE id = %s", (location_id,)
-            ).fetchone()
-        else:
-            query = sql.SQL(
-                "UPDATE locations SET {assignments} WHERE id = %(id)s RETURNING " + LOCATION_COLUMNS
-            ).format(assignments=sql.SQL(", ").join(set_clause(data)))
-            row = conn.execute(query, {**data, "id": location_id}).fetchone()
+        assignments = set_clause(data) + [sql.SQL("version = version + 1")]
+        query = sql.SQL(
+            "UPDATE locations SET {assignments} "
+            "WHERE id = %(id)s AND version = %(expected_version)s "
+            "RETURNING " + LOCATION_COLUMNS
+        ).format(assignments=sql.SQL(", ").join(assignments))
+        row = conn.execute(
+            query, {**data, "id": location_id, "expected_version": body.version}
+        ).fetchone()
 
         if row is None:
-            raise not_found("Location")
+            current = conn.execute(
+                "SELECT version FROM locations WHERE id = %s", (location_id,)
+            ).fetchone()
+            if current is None:
+                raise not_found("Location")
+            raise version_conflict("location", current["version"])
     return to_json(row)
 
 

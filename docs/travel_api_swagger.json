@@ -3,7 +3,7 @@
   "info": {
     "title": "Travel Planner API",
     "description": "Simple REST API for planning travel itineraries with locations",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "contact": {
       "name": "API Support",
       "email": "support@travelplanner.com"
@@ -11,7 +11,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
+      "url": "http://127.0.0.1:4567",
       "description": "Development server"
     }
   ],
@@ -215,7 +215,7 @@
     "/api/locations/{id}": {
       "put": {
         "summary": "Update location",
-        "description": "Update location details",
+        "description": "Update location details. Optimistic locking: send the version you have read; if the location was modified meanwhile, 409 Conflict is returned and the client must re-read the location and retry.",
         "tags": ["Locations"],
         "parameters": [
           {
@@ -248,6 +248,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -479,7 +482,7 @@
       },
       "Location": {
         "type": "object",
-        "required": ["id", "travel_plan_id", "name", "visit_order", "created_at"],
+        "required": ["id", "travel_plan_id", "name", "visit_order", "version", "created_at", "updated_at"],
         "properties": {
           "id": {
             "type": "string",
@@ -550,10 +553,20 @@
             "nullable": true,
             "description": "Additional notes about this location"
           },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Version number for optimistic locking (incremented on every update)"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
           }
         }
       },
@@ -613,6 +626,7 @@
       },
       "UpdateLocationRequest": {
         "type": "object",
+        "required": ["version"],
         "properties": {
           "name": {
             "type": "string",
@@ -639,6 +653,11 @@
             "nullable": true,
             "description": "Longitude coordinate"
           },
+          "visit_order": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "New position in the plan. If the position is occupied, the two locations swap places"
+          },
           "arrival_date": {
             "type": "string",
             "format": "date-time",
@@ -661,6 +680,11 @@
             "type": "string",
             "nullable": true,
             "description": "Additional notes"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Current version of the location for optimistic locking"
           }
         }
       },
@@ -721,7 +745,7 @@
       },
       "ConflictResponse": {
         "type": "object",
-        "required": ["error", "currentVersion"],
+        "required": ["error", "current_version"],
         "properties": {
           "error": {
             "type": "string",
@@ -827,7 +851,7 @@
                 "summary": "Version conflict",
                 "value": {
                   "error": "Conflict: Travel plan was modified by another user",
-                  "currentVersion": 5,
+                  "current_version": 5,
                   "message": "Please refresh and try again"
                 }
               }

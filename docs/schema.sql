@@ -32,7 +32,9 @@ CREATE TABLE locations (
     departure_date TIMESTAMP WITH TIME ZONE,
     budget DECIMAL(10,2),
     notes TEXT,
+    version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
     CONSTRAINT check_coordinates_lat CHECK (latitude IS NULL OR latitude BETWEEN -90 AND 90),
     CONSTRAINT check_coordinates_lng CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180),
@@ -80,4 +82,8 @@ $$ language 'plpgsql';
 
 CREATE TRIGGER update_travel_plans_updated_at 
     BEFORE UPDATE ON travel_plans 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_locations_updated_at
+    BEFORE UPDATE ON locations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

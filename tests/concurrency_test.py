@@ -71,22 +71,47 @@ def problem2_concurrent_location_inserts(n=30):
 
 
 def problem3_concurrent_location_updates():
-    print("\nПроблема 3: A змінює budget, B одночасно змінює notes однієї локації")
+    print("\nПроблема 3: A змінює budget, B одночасно змінює notes однієї локації (обидва з version=1)")
     _, plan = call("POST", "/api/travel-plans", {"title": "Location update test"})
     pid = plan["id"]
     _, loc = call("POST", f"/api/travel-plans/{pid}/locations",
                   {"name": "Paris", "budget": 50, "notes": "Book tickets"})
     lid = loc["id"]
+    changes = [{"budget": 75}, {"notes": "Tickets booked!"}]
     results = run_simultaneously([
-        lambda: call("PUT", f"/api/locations/{lid}", {"budget": 75}),
-        lambda: call("PUT", f"/api/locations/{lid}", {"notes": "Tickets booked!"}),
+        lambda c=c: call("PUT", f"/api/locations/{lid}", {**c, "version": 1}) for c in changes
     ])
+    statuses = sorted(s for s, _ in results)
+    check("один запит 200, інший 409 Conflict (втрата оновлення неможлива)",
+          statuses == [200, 409], str(statuses))
+
+    for change, (status, _) in zip(changes, results):
+        if status == 409:
+            _, fresh = call("GET", f"/api/travel-plans/{pid}")
+            version = fresh["locations"][0]["version"]
+            status, _ = call("PUT", f"/api/locations/{lid}", {**change, "version": version})
+            check("повторний запит з актуальною версією успішний", status == 200, str(status))
+
     _, final = call("GET", f"/api/travel-plans/{pid}")
     final_loc = final["locations"][0]
-    check("обидва запити успішні", [s for s, _ in results] == [200, 200])
-    check("budget = 75 (зміна A не втрачена)", final_loc["budget"] == 75.0, str(final_loc["budget"]))
-    check("notes = 'Tickets booked!' (зміна B не втрачена)",
+    check("budget = 75 (зміна A збережена)", final_loc["budget"] == 75.0, str(final_loc["budget"]))
+    check("notes = 'Tickets booked!' (зміна B збережена)",
           final_loc["notes"] == "Tickets booked!", final_loc["notes"])
+    check("version = 3", final_loc["version"] == 3, str(final_loc["version"]))
+    call("DELETE", f"/api/travel-plans/{pid}")
+
+
+def problem3_same_field_race(n=20):
+    print(f"\nПроблема 3 (жорсткий варіант): {n} користувачів одночасно змінюють budget з version=1")
+    _, plan = call("POST", "/api/travel-plans", {"title": "Same field race"})
+    pid = plan["id"]
+    _, loc = call("POST", f"/api/travel-plans/{pid}/locations", {"name": "Rome", "budget": 50})
+    lid = loc["id"]
+    funcs = [lambda i=i: call("PUT", f"/api/locations/{lid}", {"budget": 100 + i, "version": 1})
+             for i in range(n)]
+    statuses = [s for s, _ in run_simultaneously(funcs)]
+    check("рівно один запит успішний (200)", statuses.count(200) == 1, f"200: {statuses.count(200)}")
+    check("решта отримали 409 Conflict", statuses.count(409) == n - 1, f"409: {statuses.count(409)}")
     call("DELETE", f"/api/travel-plans/{pid}")
 
 
@@ -118,6 +143,7 @@ if __name__ == "__main__":
     problem1_concurrent_plan_updates()
     problem2_concurrent_location_inserts()
     problem3_concurrent_location_updates()
+    problem3_same_field_race()
     latency_test()
     print("\nРЕЗУЛЬТАТ:", "УСІ ПЕРЕВІРКИ ПРОЙДЕНО" if results_ok else "Є ПОМИЛКИ")
     sys.exit(0 if results_ok else 1)

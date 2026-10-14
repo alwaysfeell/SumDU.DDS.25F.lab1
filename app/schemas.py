@@ -104,6 +104,7 @@ class LocationUpdate(_Base):
     departure_date: Optional[datetime] = None
     budget: Money = Field(None, **MONEY_FIELD)
     notes: Optional[str] = None
+    version: int = Field(ge=1, description="Версія локації, яку прочитав клієнт (optimistic locking)")
 
     @field_validator("name")
     @classmethod

@@ -94,6 +94,98 @@ jsonpath "$.locations[0].visit_order" == 1
 jsonpath "$.locations[1].visit_order" == 2
 jsonpath "$.locations[2].visit_order" == 3
 
+# Strategy 4: Concurrent Location Updates (optimistic locking for locations)
+# User A and User B both read location D with version 1
+POST {{host}}/api/travel-plans/{{race_plan_id}}/locations
+Content-Type: application/json
+{
+  "name": "Location D",
+  "budget": 50.00,
+  "notes": "Book tickets"
+}
+
+HTTP 201
+[Captures]
+location_d_id: jsonpath "$.id"
+location_d_version: jsonpath "$.version"
+
+[Asserts]
+jsonpath "$.version" == 1
+
+# User A changes budget 50 -> 75 with version 1: succeeds, version becomes 2
+PUT {{host}}/api/locations/{{location_d_id}}
+Content-Type: application/json
+{
+  "budget": 75.00,
+  "version": {{location_d_version}}
+}
+
+HTTP 200
+[Asserts]
+jsonpath "$.version" == 2
+jsonpath "$.budget" == 75.00
+
+# User B changes notes with stale version 1: must fail with 409
+PUT {{host}}/api/locations/{{location_d_id}}
+Content-Type: application/json
+{
+  "notes": "Tickets booked!",
+  "version": {{location_d_version}}
+}
+
+HTTP 409
+[Asserts]
+jsonpath "$.error" contains "Conflict"
+jsonpath "$.current_version" == 2
+
+# User B re-reads the plan, gets fresh version and retries
+GET {{host}}/api/travel-plans/{{race_plan_id}}
+
+HTTP 200
+[Captures]
+location_d_fresh_version: jsonpath "$.locations[3].version"
+
+[Asserts]
+jsonpath "$.locations[3].name" == "Location D"
+jsonpath "$.locations[3].version" == 2
+
+PUT {{host}}/api/locations/{{location_d_id}}
+Content-Type: application/json
+{
+  "notes": "Tickets booked!",
+  "version": {{location_d_fresh_version}}
+}
+
+HTTP 200
+[Asserts]
+jsonpath "$.version" == 3
+jsonpath "$.budget" == 75.00
+jsonpath "$.notes" == "Tickets booked!"
+
+# Strategy 5: Reorder locations (swap visit_order), both versions are bumped
+PUT {{host}}/api/locations/{{location_d_id}}
+Content-Type: application/json
+{
+  "visit_order": 1,
+  "version": 3
+}
+
+HTTP 200
+[Asserts]
+jsonpath "$.visit_order" == 1
+jsonpath "$.version" == 4
+
+GET {{host}}/api/travel-plans/{{race_plan_id}}
+
+HTTP 200
+[Asserts]
+jsonpath "$.locations" count == 4
+jsonpath "$.locations[0].name" == "Location D"
+jsonpath "$.locations[0].visit_order" == 1
+jsonpath "$.locations[3].name" == "Location A"
+jsonpath "$.locations[3].visit_order" == 4
+jsonpath "$.locations[3].version" == 2
+
 # Strategy 3: Cascade Delete Race Condition Test
 DELETE {{host}}/api/travel-plans/{{race_plan_id}}
 
