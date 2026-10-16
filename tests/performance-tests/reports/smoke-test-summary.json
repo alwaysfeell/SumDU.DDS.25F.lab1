@@ -1,0 +1,305 @@
+{
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "status is one of [200]": {
+                    "path": "::status is one of [200]",
+                    "id": "4cc9cf26dabd60fd28bb0650b836626a",
+                    "passes": 36,
+                    "fails": 0,
+                    "name": "status is one of [200]"
+                },
+                "API is healthy": {
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "API is healthy",
+                    "path": "::API is healthy",
+                    "id": "431e7299c87234838fc67d8e9c62d6d5"
+                },
+                "status is healthy": {
+                    "name": "status is healthy",
+                    "path": "::status is healthy",
+                    "id": "1baccbc963f1ad802c81dfa833c6d2cd",
+                    "passes": 9,
+                    "fails": 0
+                },
+                "plans list retrieved": {
+                    "fails": 0,
+                    "name": "plans list retrieved",
+                    "path": "::plans list retrieved",
+                    "id": "f874beaf4b64bd6d8c6ca69b03dcdf8e",
+                    "passes": 9
+                },
+                "response is array": {
+                    "id": "415b02f3aa6f20fbc0a59dd13e254409",
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "response is array",
+                    "path": "::response is array"
+                },
+                "status is one of [201]": {
+                    "path": "::status is one of [201]",
+                    "id": "2a219a6a04c3f44575538827722fde17",
+                    "passes": 18,
+                    "fails": 0,
+                    "name": "status is one of [201]"
+                },
+                "plan created successfully": {
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "plan created successfully",
+                    "path": "::plan created successfully",
+                    "id": "4430347fee6588434e2fa48273edd9d6"
+                },
+                "plan has valid UUID": {
+                    "id": "f5060b2b3d1e1fd675333565f1b4e5bc",
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "plan has valid UUID",
+                    "path": "::plan has valid UUID"
+                },
+                "plan has version 1": {
+                    "name": "plan has version 1",
+                    "path": "::plan has version 1",
+                    "id": "e4195d6a24537805be211a70d7bbb0c5",
+                    "passes": 9,
+                    "fails": 0
+                },
+                "plan retrieved successfully": {
+                    "passes": 18,
+                    "fails": 0,
+                    "name": "plan retrieved successfully",
+                    "path": "::plan retrieved successfully",
+                    "id": "996db80bc0a4bccb60a158875d56d286"
+                },
+                "plan has locations array": {
+                    "name": "plan has locations array",
+                    "path": "::plan has locations array",
+                    "id": "60a681aa9f87f72dbd82284f192cd2fe",
+                    "passes": 18,
+                    "fails": 0
+                },
+                "location created successfully": {
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "location created successfully",
+                    "path": "::location created successfully",
+                    "id": "33e38e97d48b4bb650f31ed6a2a0e431"
+                },
+                "location has visit_order": {
+                    "fails": 0,
+                    "name": "location has visit_order",
+                    "path": "::location has visit_order",
+                    "id": "c766315f8945f2dfceba5a55f57f68fb",
+                    "passes": 9
+                },
+                "location linked to plan": {
+                    "name": "location linked to plan",
+                    "path": "::location linked to plan",
+                    "id": "00df35c0d899cbb7ac89004d9b542636",
+                    "passes": 9,
+                    "fails": 0
+                },
+                "status is one of [200,409]": {
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "status is one of [200,409]",
+                    "path": "::status is one of [200,409]",
+                    "id": "852c0f8467a8c1debe4684e8a9f00bad"
+                },
+                "plan updated successfully": {
+                    "path": "::plan updated successfully",
+                    "id": "2a8011a0230cc8fa757089fd90ed81fc",
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "plan updated successfully"
+                },
+                "version incremented": {
+                    "path": "::version incremented",
+                    "id": "fb675b3b7988b8d6d0abbac9ae2f933f",
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "version incremented"
+                },
+                "status is one of [204]": {
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "status is one of [204]",
+                    "path": "::status is one of [204]",
+                    "id": "69c95fd3c489ed8e00d8fe73d233e6f5"
+                },
+                "plan deleted successfully": {
+                    "name": "plan deleted successfully",
+                    "path": "::plan deleted successfully",
+                    "id": "065a386a9d49aeabb8866c4582c89f64",
+                    "passes": 9,
+                    "fails": 0
+                },
+                "status is one of [404]": {
+                    "path": "::status is one of [404]",
+                    "id": "742f18b2615d32d2da7e8e843156f4d8",
+                    "passes": 9,
+                    "fails": 0,
+                    "name": "status is one of [404]"
+                },
+                "plan is deleted (404)": {
+                    "name": "plan is deleted (404)",
+                    "path": "::plan is deleted (404)",
+                    "id": "a6a0ea24e2a723d10b58ce9a41d42bd3",
+                    "passes": 9,
+                    "fails": 0
+                }
+            },
+        "name": ""
+    },
+    "metrics": {
+        "http_req_receiving": {
+            "avg": 0.4199308641975308,
+            "min": 0,
+            "med": 0.4542,
+            "max": 1.0045,
+            "p(90)": 0.8741,
+            "p(95)": 0.9524
+        },
+        "http_req_blocked": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.006385185185185185,
+            "min": 0,
+            "med": 0,
+            "max": 0.5172
+        },
+        "http_req_sending": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iterations": {
+            "count": 9,
+            "rate": 0.3205421361915938
+        },
+        "api_errors": {
+            "passes": 0,
+            "fails": 81,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "data_sent": {
+            "rate": 604.1506951353339,
+            "count": 16963
+        },
+        "http_reqs": {
+            "count": 81,
+            "rate": 2.884879225724344
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0
+        },
+        "http_req_waiting": {
+            "max": 16.5245,
+            "p(90)": 2.7357,
+            "p(95)": 3.7002,
+            "avg": 2.103762962962963,
+            "min": 0.6266,
+            "med": 1.6626
+        },
+        "vus": {
+            "min": 1,
+            "max": 5,
+            "value": 1
+        },
+        "vus_max": {
+            "value": 5,
+            "min": 5,
+            "max": 5
+        },
+        "iteration_duration": {
+            "avg": 8974.7137,
+            "min": 8385.3899,
+            "med": 8894.2983,
+            "max": 9654.6767,
+            "p(90)": 9551.12734,
+            "p(95)": 9602.90202
+        },
+        "http_req_duration": {
+            "med": 2.0622,
+            "max": 16.9763,
+            "p(90)": 2.9406,
+            "p(95)": 4.3451,
+            "avg": 2.523693827160493,
+            "min": 0.6605,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "data_received": {
+            "count": 46256,
+            "rate": 1647.4441168531514
+        },
+        "http_req_failed{type:write}": {
+            "passes": 0,
+            "fails": 36,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "http_req_failed{type:read}": {
+            "passes": 0,
+            "fails": 45,
+            "thresholds": {
+                "rate<0.12": false
+            },
+            "value": 0
+        },
+        "checks": {
+            "passes": 243,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.90": false
+            },
+            "value": 1
+        },
+        "http_req_connecting": {
+            "avg": 0.006385185185185185,
+            "min": 0,
+            "med": 0,
+            "max": 0.5172,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "optimistic_lock_conflicts": {
+            "passes": 0,
+            "fails": 9,
+            "value": 0
+        },
+        "http_req_duration{expected_response:true}": {
+            "max": 16.9763,
+            "p(90)": 2.9406,
+            "p(95)": 4.3451,
+            "avg": 2.523693827160493,
+            "min": 0.6605,
+            "med": 2.0622
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 81,
+            "thresholds": {
+                "rate<0.05": false
+            },
+            "value": 0
+        }
+    }
+}

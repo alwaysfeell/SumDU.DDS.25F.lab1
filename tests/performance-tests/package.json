@@ -1,0 +1,25 @@
+{
+  "name": "travel-api-k6-tests",
+  "version": "1.0.0",
+  "description": "K6 Load Testing Suite for Travel Planner API",
+  "scripts": {
+    "test:smoke": "k6 run ./tests/smoke-test.js",
+    "test:load": "k6 run ./tests/load-test.js",
+    "test:stress": "k6 run ./tests/stress-test.js",
+    "test:spike": "k6 run ./tests/spike-test.js",
+    "test:endurance": "k6 run ./tests/endurance-test.js",
+    "clean": "rm -rf results/*.json"
+  },
+  "keywords": [
+    "k6",
+    "load-testing",
+    "performance",
+    "api-testing"
+  ],
+  "author": "b.kuzikov@dl.sumdu.edu.ua",
+  "license": "MIT",
+  "devDependencies": {},
+  "engines": {
+    "k6": ">=0.45.0"
+  }
+}
