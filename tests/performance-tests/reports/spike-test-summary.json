@@ -1,0 +1,1346 @@
+{
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+      {
+        "name": "setup",
+        "path": "::setup",
+        "id": "5c0f8025f7e0b6654089e5b00e950f1a",
+        "groups": [],
+        "checks": [
+            {
+              "path": "::setup::status is one of [200]",
+              "id": "84b02e47d7215ea2820ab6ef6dc429f3",
+              "passes": 2,
+              "fails": 0,
+              "name": "status is one of [200]"
+            },
+            {
+              "name": "API is healthy",
+              "path": "::setup::API is healthy",
+              "id": "c5aa59fedd1a1826c01ac9514594957d",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "id": "b202d5c1c558b315ad1b4f700da34155",
+              "passes": 1,
+              "fails": 0,
+              "name": "status is healthy",
+              "path": "::setup::status is healthy"
+            },
+            {
+              "name": "plans list retrieved",
+              "path": "::setup::plans list retrieved",
+              "id": "5e844271b73e134c96f69cc7ea9c3bf1",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "path": "::setup::response is array",
+              "id": "005055520f75ead0534c5347fab4c957",
+              "passes": 1,
+              "fails": 0,
+              "name": "response is array"
+            },
+            {
+              "name": "status is one of [201]",
+              "path": "::setup::status is one of [201]",
+              "id": "7c278eec949bf686c4bf5c8acd4a777d",
+              "passes": 200,
+              "fails": 0
+            },
+            {
+              "id": "503abbf1294e289c5b1a337decd83064",
+              "passes": 50,
+              "fails": 0,
+              "name": "plan created successfully",
+              "path": "::setup::plan created successfully"
+            },
+            {
+              "name": "plan has valid UUID",
+              "path": "::setup::plan has valid UUID",
+              "id": "23a4d9b6fc9be3aac18e83b576700906",
+              "passes": 50,
+              "fails": 0
+            },
+            {
+              "name": "plan has version 1",
+              "path": "::setup::plan has version 1",
+              "id": "2136f68b592864bdfbb3a3c1f37a66a2",
+              "passes": 50,
+              "fails": 0
+            },
+            {
+              "name": "location created successfully",
+              "path": "::setup::location created successfully",
+              "id": "1fc024f74a6790ebf831c42de85527a0",
+              "passes": 150,
+              "fails": 0
+            },
+            {
+              "passes": 150,
+              "fails": 0,
+              "name": "location has visit_order",
+              "path": "::setup::location has visit_order",
+              "id": "bf622d1bb02876d41b0e4e465775834e"
+            },
+            {
+              "fails": 0,
+              "name": "location linked to plan",
+              "path": "::setup::location linked to plan",
+              "id": "082078976ad12d101071c56adb884786",
+              "passes": 150
+            }
+          ]
+      },
+      {
+        "name": "viewer",
+        "path": "::viewer",
+        "id": "9a73be01953800e84276172524c64e72",
+        "groups": [],
+        "checks": [
+            {
+              "path": "::viewer::status is one of [200]",
+              "id": "967caf569f40b97ab0cc028b267a6929",
+              "passes": 6432,
+              "fails": 719,
+              "name": "status is one of [200]"
+            },
+            {
+              "passes": 811,
+              "fails": 146,
+              "name": "plans list retrieved",
+              "path": "::viewer::plans list retrieved",
+              "id": "91873f35a118d67fb48357904ab3fcd0"
+            },
+            {
+              "name": "response is array",
+              "path": "::viewer::response is array",
+              "id": "6ee67b71761fc7ac3dcda428f8997e6b",
+              "passes": 811,
+              "fails": 146
+            },
+            {
+              "name": "plan retrieved successfully",
+              "path": "::viewer::plan retrieved successfully",
+              "id": "5735dc034ad5dd8d0457b3af864bc6bb",
+              "passes": 5621,
+              "fails": 573
+            },
+            {
+              "passes": 5621,
+              "fails": 573,
+              "name": "plan has locations array",
+              "path": "::viewer::plan has locations array",
+              "id": "7b5358b15a2c405ff0f4d6a025be7dc6"
+            }
+          ]
+      },
+      {
+        "path": "::planner",
+        "id": "e442fcfe9b44fda3c31f59ad431c1e10",
+        "groups": [],
+        "checks": [
+            {
+              "name": "status is one of [201]",
+              "path": "::planner::status is one of [201]",
+              "id": "5b186553812fa4026b975bc73d4ee7d7",
+              "passes": 12172,
+              "fails": 606
+            },
+            {
+              "name": "plan created successfully",
+              "path": "::planner::plan created successfully",
+              "id": "42a9e324821fafad207bea7866b6abb9",
+              "passes": 3478,
+              "fails": 606
+            },
+            {
+              "name": "plan has valid UUID",
+              "path": "::planner::plan has valid UUID",
+              "id": "829add3f4978204887acd5d00226bf20",
+              "passes": 3478,
+              "fails": 606
+            },
+            {
+              "name": "plan has version 1",
+              "path": "::planner::plan has version 1",
+              "id": "14d515a7cc2cbf4acb37edf3dd977a6e",
+              "passes": 3478,
+              "fails": 606
+            },
+            {
+              "passes": 8694,
+              "fails": 0,
+              "name": "location created successfully",
+              "path": "::planner::location created successfully",
+              "id": "ad1ab5251ad118ea40e8bde9e6bbf3a2"
+            },
+            {
+              "name": "location has visit_order",
+              "path": "::planner::location has visit_order",
+              "id": "a87e8960e311a09281957c929de78d23",
+              "passes": 8694,
+              "fails": 0
+            },
+            {
+              "passes": 8694,
+              "fails": 0,
+              "name": "location linked to plan",
+              "path": "::planner::location linked to plan",
+              "id": "be93d3a5b1162d22a7202e6acc037e61"
+            },
+            {
+              "path": "::planner::status is one of [200]",
+              "id": "1da26336f840c24d3f3700ee935c2e06",
+              "passes": 6956,
+              "fails": 0,
+              "name": "status is one of [200]"
+            },
+            {
+              "id": "34710d3a56d87f5c816ab466e0804acf",
+              "passes": 6956,
+              "fails": 0,
+              "name": "plan retrieved successfully",
+              "path": "::planner::plan retrieved successfully"
+            },
+            {
+              "passes": 6956,
+              "fails": 0,
+              "name": "plan has locations array",
+              "path": "::planner::plan has locations array",
+              "id": "fa6d918152dd96b3b8cf6a4f3da03541"
+            },
+            {
+              "path": "::planner::status is one of [200,409]",
+              "id": "6a538a8cfa3673db78d321749e348c51",
+              "passes": 6956,
+              "fails": 0,
+              "name": "status is one of [200,409]"
+            },
+            {
+              "passes": 3478,
+              "fails": 0,
+              "name": "location updated successfully",
+              "path": "::planner::location updated successfully",
+              "id": "eba2fdd488e39c3b7490d15d8bbf3ec0"
+            },
+            {
+              "path": "::planner::location version incremented",
+              "id": "4c66ac929d568d304f9c5e0d0257fbbd",
+              "passes": 3478,
+              "fails": 0,
+              "name": "location version incremented"
+            },
+            {
+              "path": "::planner::plan updated successfully",
+              "id": "56dbde1d72a03f4b6e854eb8cb3dc7ce",
+              "passes": 3478,
+              "fails": 0,
+              "name": "plan updated successfully"
+            },
+            {
+              "passes": 3478,
+              "fails": 0,
+              "name": "version incremented",
+              "path": "::planner::version incremented",
+              "id": "7be0629d8b84f91d0e42a1a2349e5b92"
+            },
+            {
+              "path": "::planner::status is one of [204]",
+              "id": "e18cac73841953da447252cbbbb1ff49",
+              "passes": 3478,
+              "fails": 0,
+              "name": "status is one of [204]"
+            },
+            {
+              "name": "plan deleted successfully",
+              "path": "::planner::plan deleted successfully",
+              "id": "ace0f74fa611572cc3e4038d8a5467bc",
+              "passes": 3478,
+              "fails": 0
+            }
+          ],
+        "name": "planner"
+      },
+      {
+        "groups": [],
+        "checks": [
+            {
+              "path": "::collaborator::status is one of [200]",
+              "id": "5dd69095d586af9c408d09fcc8fa39c2",
+              "passes": 16725,
+              "fails": 1025,
+              "name": "status is one of [200]"
+            },
+            {
+              "path": "::collaborator::plan retrieved successfully",
+              "id": "a6a8400a799ce1b2c3ea5296a0b9cddf",
+              "passes": 16725,
+              "fails": 1025,
+              "name": "plan retrieved successfully"
+            },
+            {
+              "name": "plan has locations array",
+              "path": "::collaborator::plan has locations array",
+              "id": "ee0e2361099c0666fc3175cbcbf69f63",
+              "passes": 16725,
+              "fails": 1025
+            },
+            {
+              "name": "status is one of [200,409]",
+              "path": "::collaborator::status is one of [200,409]",
+              "id": "e29c8389c4745f656541a8fe363cc6ad",
+              "passes": 9633,
+              "fails": 0
+            },
+            {
+              "name": "location updated successfully",
+              "path": "::collaborator::location updated successfully",
+              "id": "bf98760c69b3195ff87ab51de326dca6",
+              "passes": 3647,
+              "fails": 0
+            },
+            {
+              "name": "location version incremented",
+              "path": "::collaborator::location version incremented",
+              "id": "a0673ba859cb14e101696b1696bbd790",
+              "passes": 3647,
+              "fails": 0
+            },
+            {
+              "path": "::collaborator::status is one of [201]",
+              "id": "7be38c1f8989ec638c876d1115e768fa",
+              "passes": 3078,
+              "fails": 0,
+              "name": "status is one of [201]"
+            },
+            {
+              "path": "::collaborator::location created successfully",
+              "id": "2e1c5c757d1516f0598f858e37a07727",
+              "passes": 3078,
+              "fails": 0,
+              "name": "location created successfully"
+            },
+            {
+              "name": "location has visit_order",
+              "path": "::collaborator::location has visit_order",
+              "id": "122f4a68c1a115b7e8300b3dc6595699",
+              "passes": 3078,
+              "fails": 0
+            },
+            {
+              "name": "location linked to plan",
+              "path": "::collaborator::location linked to plan",
+              "id": "03b4772bf646558e8fac68455eb59e04",
+              "passes": 3078,
+              "fails": 0
+            },
+            {
+              "passes": 1493,
+              "fails": 0,
+              "name": "plan updated successfully",
+              "path": "::collaborator::plan updated successfully",
+              "id": "1bb275feed173ff209d2ac9772291f5c"
+            },
+            {
+              "name": "version incremented",
+              "path": "::collaborator::version incremented",
+              "id": "4307cba4509186069034ee13c7c88cc1",
+              "passes": 1493,
+              "fails": 0
+            },
+            {
+              "path": "::collaborator::status is one of [204]",
+              "id": "56660f743ffbb4aa64bc78605dcd89e9",
+              "passes": 3078,
+              "fails": 0,
+              "name": "status is one of [204]"
+            },
+            {
+              "name": "location deleted successfully",
+              "path": "::collaborator::location deleted successfully",
+              "id": "04d7435387528e493df8c0c6b8047a6a",
+              "passes": 3078,
+              "fails": 0
+            },
+            {
+              "fails": 0,
+              "name": "location conflict returns current_version",
+              "path": "::collaborator::location conflict returns current_version",
+              "id": "cbee9084c54e82c774b81884cc581070",
+              "passes": 2966
+            },
+            {
+              "fails": 0,
+              "name": "plan conflict returns current_version",
+              "path": "::collaborator::plan conflict returns current_version",
+              "id": "14f1e0fa35d7d15cd1a3a74430cadb15",
+              "passes": 1527
+            }
+          ],
+        "name": "collaborator",
+        "path": "::collaborator",
+        "id": "ec4ed27c6ced19ca89757627493b447b"
+      },
+      {
+        "name": "teardown",
+        "path": "::teardown",
+        "id": "a8a9942382e8ffe2e56ef29e664b8229",
+        "groups": [],
+        "checks": [
+            {
+              "id": "a8bbc7cc8e3a69a1dfa1cb99f3be32f1",
+              "passes": 1,
+              "fails": 0,
+              "name": "status is one of [200]",
+              "path": "::teardown::status is one of [200]"
+            },
+            {
+              "name": "plans list retrieved",
+              "path": "::teardown::plans list retrieved",
+              "id": "53d9159db0aa76427cc33d287de8edc6",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "name": "response is array",
+              "path": "::teardown::response is array",
+              "id": "722230c158ed0582b007d691a1616de0",
+              "passes": 1,
+              "fails": 0
+            },
+            {
+              "passes": 50,
+              "fails": 0,
+              "name": "status is one of [204]",
+              "path": "::teardown::status is one of [204]",
+              "id": "6a04f7e050b48d5e61b0fdb33cba5723"
+            },
+            {
+              "name": "plan deleted successfully",
+              "path": "::teardown::plan deleted successfully",
+              "id": "26ca0951a4defad59646ac6dba1ef316",
+              "passes": 50,
+              "fails": 0
+            }
+          ]
+      }
+    ],
+    "checks": []
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)",
+      "p(99)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdErrTTY": true,
+    "testRunDurationMs": 491938.8892,
+    "isStdOutTTY": true
+  },
+  "metrics": {
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 144.55250755971338,
+        "count": 71111
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.9649273901690412,
+        "passes": 210634,
+        "fails": 7656
+      },
+      "thresholds": {
+        "rate>0.85": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s03_spikeup_2000}": {
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      },
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 708.7455839461257,
+        "min": 0,
+        "med": 332.1085,
+        "max": 8015.6682,
+        "p(90)": 1432.85451,
+        "p(95)": 1688.4137299999995,
+        "p(99)": 7032.445092999991
+      }
+    },
+    "optimistic_lock_conflicts{phase:s07_rec2_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.03038674033149171,
+        "passes": 11,
+        "fails": 351
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s06_rec1_100}": {
+      "contains": "time",
+      "values": {
+        "med": 2.84475,
+        "max": 770.8342,
+        "p(90)": 411.97139,
+        "p(95)": 585.8283999999999,
+        "p(99)": 671.3481929999997,
+        "avg": 83.61641516826948,
+        "min": 0.504
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      },
+      "type": "trend"
+    },
+    "optimistic_lock_conflicts{phase:s10_down_0}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "fails": 176,
+        "rate": 0.011235955056179775,
+        "passes": 2
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts{phase:s08_rec3_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.031914893617021274,
+        "passes": 24,
+        "fails": 728
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_reqs{phase:s07_rec2_100}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 1705,
+        "rate": 3.4658776474710145
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts{phase:s03_spikeup_2000}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "fails": 1305,
+        "rate": 0.2647887323943662,
+        "passes": 470
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_blocked": {
+      "values": {
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0.5141,
+        "avg": 0.009302622660347915,
+        "min": 0,
+        "med": 0,
+        "max": 9.515
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_reqs{phase:s09_rec4_100}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 3409,
+        "rate": 6.929722522128262
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s05_spikedown_100}": {
+      "values": {
+        "p(90)": 2829.9251900000004,
+        "p(95)": 2892.034525,
+        "p(99)": 2987.762311,
+        "avg": 2085.1156543114794,
+        "min": 549.1988,
+        "med": 2372.5058,
+        "max": 3068.2123
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_req_failed{phase:s07_rec2_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 0,
+        "fails": 1705,
+        "rate": 0
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s01_warmup_100}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 2.5356690393518555,
+        "min": 0.5043,
+        "med": 2.402,
+        "max": 7.6498,
+        "p(90)": 3.30441,
+        "p(95)": 3.836259999999997,
+        "p(99)": 5.630503
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts{phase:s02_base_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.04298801973220578,
+        "passes": 61,
+        "fails": 1358
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_reqs{phase:s02_base_100}": {
+      "contains": "default",
+      "values": {
+        "count": 6863,
+        "rate": 13.950919820875995
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      },
+      "type": "counter"
+    },
+    "optimistic_lock_conflicts{phase:s04_spike_2000}": {
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.38163716814159293,
+        "passes": 2760,
+        "fails": 4472
+      }
+    },
+    "http_reqs{phase:s08_rec3_100}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 3418,
+        "rate": 6.948017477452157
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.27084212429923443,
+        "passes": 4493,
+        "fails": 12096
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 12.971900296719241,
+        "min": 0,
+        "med": 12.8339,
+        "max": 223.3726,
+        "p(90)": 29.5061,
+        "p(95)": 35.670649999999995,
+        "p(99)": 50.56147999999978
+      }
+    },
+    "http_reqs{phase:s05_spikedown_100}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 9092,
+        "rate": 18.481970422760387
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 9.515,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0.5061,
+        "avg": 0.007880011531268029
+      }
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 272648117,
+        "rate": 554231.679962089
+      }
+    },
+    "http_reqs{phase:s01_warmup_100}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 1728,
+        "rate": 3.5126314221876322
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed{phase:s10_down_0}": {
+      "contains": "default",
+      "values": {
+        "passes": 0,
+        "fails": 779,
+        "rate": 0
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      },
+      "type": "rate"
+    },
+    "http_req_duration{phase:s10_down_0}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 3.5349799999999947,
+        "p(99)": 5.034352000000002,
+        "avg": 2.3436070603337624,
+        "min": 0.5092,
+        "med": 2.269,
+        "max": 6.8669,
+        "p(90)": 3.0086600000000003
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0
+      }
+    },
+    "http_req_duration{phase:s08_rec3_100}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0.5039,
+        "med": 2.28965,
+        "max": 26.7607,
+        "p(90)": 3.17963,
+        "p(95)": 3.7137049999999974,
+        "p(99)": 5.573539999999998,
+        "avg": 2.4353318607372763
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed{phase:s09_rec4_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 3409
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 39216.70287999998,
+        "p(99)": 44720.219106,
+        "avg": 16021.694219455712,
+        "min": 1002.6778,
+        "med": 13521.5209,
+        "max": 65135.5946,
+        "p(90)": 35422.88414
+      }
+    },
+    "optimistic_lock_conflicts{phase:s06_rec1_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.09656453110492108,
+        "passes": 104,
+        "fails": 973
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_retries": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 8.645382776946759,
+        "count": 4253
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 13410,
+        "rate": 27.259483432601936
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 2000,
+        "min": 2000,
+        "max": 2000
+      }
+    },
+    "optimistic_lock_gave_up": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 240,
+        "rate": 0.4878654753038378
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 2.1308,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0,
+        "avg": 0.004022464878851373
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "fails": 68761,
+        "rate": 0.03304692663582287,
+        "passes": 2350
+      },
+      "thresholds": {
+        "rate<0.05": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts{phase:s09_rec4_100}": {
+      "values": {
+        "rate": 0.03765690376569038,
+        "passes": 27,
+        "fails": 690
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default"
+    },
+    "http_req_failed{phase:s03_spikeup_2000}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.10548564687377114,
+        "passes": 1073,
+        "fails": 9099
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 1495.4144098137092,
+        "min": 0.5033,
+        "med": 1660.4996,
+        "max": 8907.8445,
+        "p(90)": 2896.6662,
+        "p(95)": 2994.9793,
+        "p(99)": 6185.65603999996
+      }
+    },
+    "vus": {
+      "values": {
+        "value": 2,
+        "min": 0,
+        "max": 2000
+      },
+      "type": "gauge",
+      "contains": "default"
+    },
+    "http_req_failed{phase:s08_rec3_100}": {
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 3418
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      },
+      "type": "rate"
+    },
+    "http_req_failed{phase:s05_spikedown_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 9092
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts{phase:s05_spikedown_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.37735153080044265,
+        "passes": 1023,
+        "fails": 1688
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s02_base_100}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 2.3616082616931333,
+        "min": 0.5045,
+        "med": 2.2386,
+        "max": 24.1545,
+        "p(90)": 3.05066,
+        "p(95)": 3.5688,
+        "p(99)": 5.222828
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_reqs{phase:s03_spikeup_2000}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 10172,
+        "rate": 20.677365061627658
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 16011943,
+        "rate": 32548.642425970662
+      }
+    },
+    "http_reqs{phase:s04_spike_2000}": {
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      },
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 29457,
+        "rate": 59.87938877510479
+      }
+    },
+    "http_req_failed{phase:s02_base_100}": {
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 6863
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default"
+    },
+    "http_req_failed{phase:s06_rec1_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 0,
+        "fails": 4160,
+        "rate": 0
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s09_rec4_100}": {
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      },
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 3.7125399999999997,
+        "p(99)": 5.392652,
+        "avg": 2.460134702258725,
+        "min": 0.5033,
+        "med": 2.2988,
+        "max": 53.0918,
+        "p(90)": 3.17542
+      }
+    },
+    "http_req_duration": {
+      "values": {
+        "p(90)": 2891.6492,
+        "p(95)": 2990.03325,
+        "p(99)": 5915.572299999944,
+        "avg": 1445.9955595224433,
+        "min": 0,
+        "med": 1529.4619,
+        "max": 8907.8445
+      },
+      "thresholds": {
+        "p(95)<2000": {
+          "ok": false
+        }
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "api_errors": {
+      "values": {
+        "rate": 0.03304692663582287,
+        "passes": 2350,
+        "fails": 68761
+      },
+      "type": "rate",
+      "contains": "default"
+    },
+    "http_req_duration{phase:s04_spike_2000}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 3076.82044,
+        "p(99)": 7528.851516,
+        "avg": 2589.097770163306,
+        "min": 0,
+        "med": 2695.9653,
+        "max": 8907.8445,
+        "p(90)": 2994.36948
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed{phase:s04_spike_2000}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.04335132566113318,
+        "passes": 1277,
+        "fails": 28180
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_waiting": {
+      "values": {
+        "min": 0,
+        "med": 1508.0037,
+        "max": 8875.1634,
+        "p(90)": 2870.6637,
+        "p(95)": 2966.14735,
+        "p(99)": 5896.348199999896,
+        "avg": 1433.0196367608382
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_reqs{phase:s06_rec1_100}": {
+      "values": {
+        "count": 4160,
+        "rate": 8.456334905266521
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "http_reqs{phase:s10_down_0}": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 1.5835300219237067,
+        "count": 779
+      },
+      "thresholds": {
+        "count>=0": {
+          "ok": true
+        }
+      }
+    },
+    "optimistic_lock_conflicts{phase:s01_warmup_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.03225806451612903,
+        "passes": 11,
+        "fails": 330
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration{phase:s07_rec2_100}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 3.7205799999999996,
+        "p(99)": 5.409852000000005,
+        "avg": 2.4116948387096753,
+        "min": 0.5038,
+        "med": 2.2894,
+        "max": 9.2535,
+        "p(90)": 3.1707800000000015
+      },
+      "thresholds": {
+        "max>=0": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_failed{phase:s01_warmup_100}": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 1728
+      },
+      "thresholds": {
+        "rate>=0": {
+          "ok": true
+        }
+      }
+    },
+    "group_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 39216.70287999998,
+        "p(99)": 44720.219106,
+        "avg": 16021.688190656314,
+        "min": 1002.6778,
+        "med": 13521.5209,
+        "max": 65135.5946,
+        "p(90)": 35422.88414
+      }
+    }
+  },
+  "setup_data": {
+    "sharedPlanIds": [
+      "30f838da-7133-41a1-b2b6-ce7d09b89f93",
+      "52804486-d4f2-480e-a068-7b0c96a7fa40",
+      "142a1b51-3786-455a-bf10-a26a0db38393",
+      "377d3150-f038-48cc-8543-e260b7d23926",
+      "ebdccf57-bd24-4bd6-9b52-976905bf6fc9",
+      "56051d1a-4d17-4cdf-bdb5-64f38e691e66",
+      "dd6c641c-c8d2-4d6d-aee7-d70907d8a37f",
+      "05c3798f-51b7-4bc3-892c-a91b61e0cf31",
+      "f5eb1cb3-29fa-4f8e-9c0f-5804fd92f456",
+      "8b881440-942b-4443-9348-24d58792b316",
+      "703d2dd0-0f9e-4dfb-bb66-066dbd38523e",
+      "3554adbb-f342-482d-9288-7bc37074e6a2",
+      "5e610759-57d4-42b4-80ca-06324db84345",
+      "6c019b4a-5b0c-4dc4-88b0-79eaae8045fa",
+      "bbaa9dec-ce6e-43fe-b0e7-81e06a5fc34d",
+      "0608452e-e6d3-4000-8bba-ccb6d7e50802",
+      "0519927b-5023-4010-bacf-a6254d6f5f59",
+      "5668edbb-40a2-45df-9c63-adfdfbe99f43",
+      "1c358816-f452-4c5b-9719-46b08642096c",
+      "474c0f7c-e796-43dc-b974-8defb571e0b1",
+      "5ea17066-16b3-448f-b9fd-7e34994351f9",
+      "e66703c6-abf4-4b08-9c21-793804d21ca6",
+      "73a44dc2-8859-4aa7-a7c7-bf66f85842a0",
+      "7273039f-debc-41a3-b83e-01b9a93e63f8",
+      "1204a658-4dcf-4175-86c3-2523c3eab406",
+      "89803485-87da-44cb-855a-1d202b19e9f8",
+      "e2a78342-05e3-4b93-bcbb-89b326cbdc56",
+      "b70b222b-e4a1-485f-8fa5-fdb9f7e7a503",
+      "2fda7b5f-68fb-4cf0-ae2c-160c7a9e9b8b",
+      "829b3414-eff9-431a-8713-2e3272f78140",
+      "d9fe6da6-a937-45c4-8971-04094c2f95c2",
+      "dca71f93-2d5a-4a2b-ba05-95c81be327ca",
+      "7b2952e0-735f-4941-b07e-7244fb23d6f3",
+      "e02a7590-532c-4edf-a074-f14ea586c173",
+      "517d6b1a-dddb-44e0-a0c0-a1bad90c527a",
+      "71937853-430b-4d02-9950-d990badf6d91",
+      "300d86df-177d-48fb-9967-fdfdb1db1c4b",
+      "cd7bf787-379f-47bd-bab9-6d5fb10099d4",
+      "2ca86bc7-aaff-406d-beb6-1e04a03410ba",
+      "7bace36c-f3dc-4bf3-8398-f14dd3ef14f0",
+      "2efc4e81-e499-4447-8ea5-46545ca2ea6e",
+      "f08a396c-e3f1-4140-a244-604bf9d2e56f",
+      "6cc36ab6-85f3-47b7-ab70-bec081a36fee",
+      "e4b33882-ed4d-4e8d-9176-ab14628d6a55",
+      "6976c300-a277-4e8e-aed5-7fc2a823d067",
+      "d4d3c869-d1cf-49c9-bbf5-6ac6eb3b3b5b",
+      "77fac9bf-d451-4138-9fed-72af643a2426",
+      "3e414701-cee6-45f2-aeac-1ad9a526fcea",
+      "caf08d10-27c8-4041-a4ed-e3d432444a43",
+      "4c6267b5-d0de-4b1d-b835-98f2bdaa4a5b"
+    ]
+  }
+}
