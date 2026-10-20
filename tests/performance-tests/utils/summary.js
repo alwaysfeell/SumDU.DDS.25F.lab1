@@ -8,6 +8,8 @@ export const SLA = {
   BROKEN_FAIL: 0.05,
 };
 
+export const REPORT_DIR = (__ENV.REPORT_DIR || 'reports').replace(/\\/g, '/').replace(/\/+$/, '');
+
 export const TREND_STATS = ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'];
 
 function ms(v) {
@@ -208,7 +210,7 @@ export function renderSummary(data, testName, title, profile, analyze) {
     }
   }
 
-  out.push(`Файли: reports/${testName}-summary.txt, reports/${testName}-summary.json`);
+  out.push(`Файли: ${REPORT_DIR}/${testName}-summary.txt, ${REPORT_DIR}/${testName}-summary.json`);
   out.push(line('=', W));
   out.push('');
   return out.join('\n');
@@ -220,8 +222,8 @@ export function makeHandleSummary(testName, title, profile, analyze) {
     const result = {
       stdout: text,
     };
-    result[`reports/${testName}-summary.txt`] = text;
-    result[`reports/${testName}-summary.json`] = JSON.stringify(data, null, 2);
+    result[`${REPORT_DIR}/${testName}-summary.txt`] = text;
+    result[`${REPORT_DIR}/${testName}-summary.json`] = JSON.stringify(data, null, 2);
     return result;
   };
 }
