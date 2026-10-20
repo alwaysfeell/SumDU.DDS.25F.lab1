@@ -153,3 +153,32 @@ python tests\concurrency_test.py
 * Swagger: `version`/`updated_at` у `Location`, `version`/`visit_order` в `UpdateLocationRequest`,
   відповідь 409 для `PUT /api/locations/{id}`, виправлено `currentVersion` → `current_version`
   та адресу сервера (4567).
+
+## Запуск у Docker
+Потрібен Docker Desktop (Windows/macOS) або Docker Engine (Linux).
+```
+copy .env.example .env          (Linux/macOS: cp .env.example .env) і вписати POSTGRES_PASSWORD
+docker compose up --build       API: http://localhost:4567/health, документація: http://localhost:4567/docs
+```
+Файли:
+* `Dockerfile` — двоетапна збірка образу API (python:3.15-slim, користувач без root, read-only).
+* `docker-compose.yml` — сервіси `web` (API) і `db` (PostgreSQL 18), мережа `backend`, том `pgdata`,
+  healthcheck, обмеження ресурсів. Схема БД (`docs/schema.sql`) виконується при першому запуску.
+* `docker-compose.dev.yml` — для розробки: автоперезапуск при зміні коду, БД на `127.0.0.1:5433`:
+  `docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build`.
+* `.env.example` — зразок змінних оточення (`.env` з паролями — у `.gitignore`).
+* `.dockerignore` — у образ потрапляють лише `app/`, `run.py`, `requirements.txt`.
+
+Корисні команди:
+```
+docker compose ps               стан контейнерів
+docker compose logs -f web      логи API
+docker stats                    CPU / пам'ять контейнерів
+docker compose down             зупинити (дані БД зберігаються)
+docker compose down -v          зупинити і видалити дані БД
+```
+Тести продуктивності k6 проти контейнерів (з папки `tests/performance-tests`):
+```
+powershell -ExecutionPolicy Bypass -File .\run-docker.ps1 -Test load     (smoke | load | stress | spike | endurance)
+```
+Результати — у `tests/performance-tests/reports/docker` (baseline лаб. 2 — у `reports`).
