@@ -3,10 +3,12 @@ name: traveler
 x-postgres: &postgres
   image: postgres:18-alpine
   restart: unless-stopped
-  environment:
+  environment: &postgres-env
     POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
     POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    REPLICATION_USER: ${REPLICATION_USER:?Set REPLICATION_USER in .env}
+    REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?Set REPLICATION_PASSWORD in .env}
   command:
     - "postgres"
     - "-c"
@@ -59,9 +61,7 @@ services:
     container_name: traveler_db_replica
     entrypoint: ["bash", "/docker-entrypoint-replications/entrypoint.sh"]
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
-      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      <<: *postgres-env
       REPLICA_NAME: replica1
     volumes:
       - pgdata_replica:/var/lib/postgresql

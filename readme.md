@@ -189,11 +189,15 @@ powershell -ExecutionPolicy Bypass -File .\run-docker.ps1 -Test load     (smoke 
 * `db/migrations/` — схема БД, виконується лише на primary (фізична реплікація переносить усі зміни, включно з DDL).
 * `db/replications/common/500_orchestrate.sh` — єдиний скрипт у `/docker-entrypoint-initdb.d`:
   виконує файли з `db/migrations`, потім з `db/replications/primary` (`*.sql` і `*.sh` за абеткою).
-* `db/replications/primary/` — користувач `repuser` з правом REPLICATION і рядок `host replication` у `pg_hba.conf`;
+* `db/replications/primary/` — користувач реплікації з правом REPLICATION і рядок `host replication` у `pg_hba.conf`;
   `030_synchronous_replication.sql` — `synchronous_standby_names = 'FIRST 1 (replica1)'`, `synchronous_commit = on`:
   COMMIT на primary завершується лише після запису WAL на репліці. Якщо репліка зупинена, запис на primary чекає.
-* `db/replications/standby/entrypoint.sh` — при першому запуску створює слот `replica1_slot` на primary
+* `db/replications/standby/entrypoint.sh` — при першому запуску створює слот `<REPLICA_NAME>_slot` на primary
   і копіює дані через `pg_basebackup -R` (standby.signal + primary_conninfo), далі стандартний запуск PostgreSQL.
+
+Логін і пароль користувача реплікації задаються в `.env` (`REPLICATION_USER`, `REPLICATION_PASSWORD`,
+див. `.env.example`), у скриптах і `docker-compose.yml` їх немає. Скрипти читають змінні оточення
+(`\getenv` у psql, `$REPLICATION_USER` у bash).
 
 Скрипти ініціалізації виконуються лише на порожній БД, тому перед першим запуском:
 ```
