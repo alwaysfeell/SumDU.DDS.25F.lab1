@@ -185,11 +185,13 @@ powershell -ExecutionPolicy Bypass -File .\run-docker.ps1 -Test load     (smoke 
 Результати — у `tests/performance-tests/reports/docker` (baseline лаб. 2 — у `reports`).
 
 ## Реплікація PostgreSQL (лаб. 4)
-Фізична (потокова) реплікація: `db` — primary (master), `db_replica` — hot standby (slave, лише читання).
+Синхронна фізична (потокова) реплікація: `db` — primary (master), `db_replica` — hot standby (slave, лише читання).
 * `db/migrations/` — схема БД, виконується лише на primary (фізична реплікація переносить усі зміни, включно з DDL).
 * `db/replications/common/500_orchestrate.sh` — єдиний скрипт у `/docker-entrypoint-initdb.d`:
   виконує файли з `db/migrations`, потім з `db/replications/primary` (`*.sql` і `*.sh` за абеткою).
-* `db/replications/primary/` — користувач `repuser` з правом REPLICATION і рядок `host replication` у `pg_hba.conf`.
+* `db/replications/primary/` — користувач `repuser` з правом REPLICATION і рядок `host replication` у `pg_hba.conf`;
+  `030_synchronous_replication.sql` — `synchronous_standby_names = 'FIRST 1 (replica1)'`, `synchronous_commit = on`:
+  COMMIT на primary завершується лише після запису WAL на репліці. Якщо репліка зупинена, запис на primary чекає.
 * `db/replications/standby/entrypoint.sh` — при першому запуску створює слот `replica1_slot` на primary
   і копіює дані через `pg_basebackup -R` (standby.signal + primary_conninfo), далі стандартний запуск PostgreSQL.
 
@@ -204,4 +206,4 @@ docker exec -it traveler_db psql -U traveler -d traveler
 docker exec -it traveler_db_replica psql -U traveler -d traveler
 Get-Content tests\replication\compare.sql | docker exec -i traveler_db_replica psql -U traveler -d traveler
 ```
-k6 з окремою папкою результатів: `.\run-docker.ps1 -Test load -ReportDir reports\physical`.
+k6 з окремою папкою результатів: `.\run-docker.ps1 -Test load -ReportDir reports\physical` (асинхронна), `reports\sync` (синхронна).
