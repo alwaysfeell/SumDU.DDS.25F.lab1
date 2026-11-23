@@ -5,7 +5,7 @@ import psycopg
 
 from app.config import DATABASE_URL
 
-SCHEMA = Path(__file__).parent / "docs" / "schema.sql"
+SCHEMA = Path(__file__).parent / "db" / "migrations" / "001_schema.sql"
 
 
 def main() -> None:

@@ -12,7 +12,7 @@
 
 $ErrorActionPreference = 'Continue'
 $inv = [System.Globalization.CultureInfo]::InvariantCulture
-$containers = @('traveler_web', 'traveler_db')
+$required = @('traveler_web', 'traveler_db')
 
 function Say([string]$text, [string]$color = 'Gray') { Write-Host $text -ForegroundColor $color }
 function Fail([string]$text) { Write-Host $text -ForegroundColor Red; exit 1 }
@@ -28,12 +28,15 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Fail 'Коман�
 docker info --format '{{.ServerVersion}}' 1>$null 2>$null
 if ($LASTEXITCODE -ne 0) { Fail 'Docker не відповідає. Запустіть Docker Desktop і дочекайтесь напису "Engine running".' }
 
-foreach ($c in $containers) {
+foreach ($c in $required) {
   $state = (docker inspect -f '{{.State.Status}}' $c 2>$null)
   if ($LASTEXITCODE -ne 0 -or $state -ne 'running') {
     Fail "Контейнер $c не запущено. У корені проєкту виконайте: docker compose up -d --build"
   }
 }
+
+$containers = @(docker ps --filter 'name=^traveler_' --format '{{.Names}}' | Sort-Object)
+Say ("Контейнери для docker stats: " + ($containers -join ', '))
 
 New-Item -ItemType Directory -Force -Path $ReportDir | Out-Null
 $reportAbs = (Resolve-Path $ReportDir).Path
@@ -136,9 +139,9 @@ $finishedAt = Get-Date
 
 $data = @(Import-Csv -Path $statsCsv)
 $out = New-Object System.Collections.Generic.List[string]
-$out.Add('=' * 100)
+$out.Add('=' * 108)
 $out.Add("DOCKER STATS — $Test-test   ($($startedAt.ToString('yyyy-MM-dd HH:mm:ss')) – $($finishedAt.ToString('HH:mm:ss')), k6 exit code $k6exit)")
-$out.Add('=' * 100)
+$out.Add('=' * 108)
 $engine = (docker info --format '{{.ServerVersion}}|{{.OperatingSystem}}|{{.NCPU}}|{{.MemTotal}}' 2>$null)
 if ($engine) {
   $e = $engine -split '\|'
@@ -147,11 +150,11 @@ if ($engine) {
 $out.Add("Заміри: кожні $IntervalSec с, файл $ReportDir\$Test-test-docker-stats.csv")
 $out.Add('CPU % — як у docker stats: 100% = одне повне ядро.')
 $out.Add('')
-$out.Add(('{0,-14} {1,8} {2,10} {3,10} {4,12} {5,12} {6,12} {7,12} {8,8}' -f 'Контейнер', 'Замірів', 'CPU avg', 'CPU max', 'RAM старт', 'RAM кінець', 'RAM max', 'Ліміт RAM', 'PIDs max'))
-$out.Add('-' * 100)
+$out.Add(('{0,-22} {1,8} {2,10} {3,10} {4,12} {5,12} {6,12} {7,12} {8,8}' -f 'Контейнер', 'Замірів', 'CPU avg', 'CPU max', 'RAM старт', 'RAM кінець', 'RAM max', 'Ліміт RAM', 'PIDs max'))
+$out.Add('-' * 108)
 foreach ($c in $containers) {
   $rows = @($data | Where-Object { $_.container -eq $c })
-  if ($rows.Count -eq 0) { $out.Add(('{0,-14} немає даних' -f $c)); continue }
+  if ($rows.Count -eq 0) { $out.Add(('{0,-22} немає даних' -f $c)); continue }
   $cpu = @($rows | ForEach-Object { [double]::Parse($_.cpu_percent, $inv) })
   $mem = @($rows | ForEach-Object { [double]::Parse($_.mem_usage_mb, $inv) })
   $pids = @($rows | ForEach-Object { [int]$_.pids })
@@ -160,14 +163,14 @@ foreach ($c in $containers) {
   $memMax = ($mem | Measure-Object -Maximum).Maximum
   $pidMax = ($pids | Measure-Object -Maximum).Maximum
   $limit = [double]::Parse($rows[0].mem_limit_mb, $inv)
-  $out.Add(('{0,-14} {1,8} {2,10} {3,10} {4,12} {5,12} {6,12} {7,12} {8,8}' -f $c, $rows.Count,
+  $out.Add(('{0,-22} {1,8} {2,10} {3,10} {4,12} {5,12} {6,12} {7,12} {8,8}' -f $c, $rows.Count,
       ((Fmt $cpuAvg) + '%'), ((Fmt $cpuMax) + '%'), ((Fmt $mem[0]) + ' MB'), ((Fmt $mem[-1]) + ' MB'),
       ((Fmt $memMax) + ' MB'), ((Fmt $limit 0) + ' MB'), $pidMax))
 }
 $out.Add('')
 if ($Test -eq 'smoke') { $out.Add("Підсумок k6: $ReportDir\smoke-test-summary.json") }
 else { $out.Add("Підсумок k6: $ReportDir\$Test-test-summary.txt, графіки: $ReportDir\$Test-test-dashboard.html") }
-$out.Add('=' * 100)
+$out.Add('=' * 108)
 
 $summaryFile = Join-Path $reportAbs "$Test-test-docker-stats-summary.txt"
 $out | Set-Content -Encoding UTF8 -Path $summaryFile

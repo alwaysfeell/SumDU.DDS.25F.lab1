@@ -1,39 +1,72 @@
 name: traveler
 
+x-postgres: &postgres
+  image: postgres:18-alpine
+  restart: unless-stopped
+  environment:
+    POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+  command:
+    - "postgres"
+    - "-c"
+    - "listen_addresses=*"
+    - "-c"
+    - "wal_level=logical"
+    - "-c"
+    - "max_replication_slots=10"
+    - "-c"
+    - "max_wal_senders=10"
+    - "-c"
+    - "max_logical_replication_workers=4"
+    - "-c"
+    - "max_worker_processes=10"
+  networks:
+    - backend
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 30s
+  shm_size: 256mb
+  deploy:
+    resources:
+      limits:
+        cpus: "${DB_CPUS:-2.0}"
+        memory: ${DB_MEMORY:-1G}
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+  security_opt:
+    - no-new-privileges:true
+
 services:
   # PostgreSQL
   db:
-    image: postgres:18-alpine
+    <<: *postgres
     container_name: traveler_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
-      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - pgdata:/var/lib/postgresql
-      - ./docs/schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    shm_size: 256mb
-    deploy:
-      resources:
-        limits:
-          cpus: "${DB_CPUS:-2.0}"
-          memory: ${DB_MEMORY:-1G}
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-    security_opt:
-      - no-new-privileges:true
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/replications/publisher:/docker-entrypoint-replications:ro
+      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
+
+  db_replica:
+    <<: *postgres
+    container_name: traveler_db_replica
+    volumes:
+      - pgdata_replica:/var/lib/postgresql
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/replications/subscriber:/docker-entrypoint-replications:ro
+      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "55432:5432"
+    depends_on:
+      db:
+        condition: service_healthy
 
   # TravelerAPI
   web:
@@ -83,6 +116,7 @@ services:
 
 volumes:
   pgdata:
+  pgdata_replica:
 
 networks:
   backend:

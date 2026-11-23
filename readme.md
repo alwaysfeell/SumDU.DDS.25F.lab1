@@ -117,8 +117,9 @@ app/
     locations.py      — локації (автонумерація з блокуванням плану)
     health.py         — /health
 docs/                 — схема БД, Swagger
+db/                   — міграції (db/migrations) і сценарії реплікації (db/replications)
 tests/                — Hurl-тести + concurrency_test.py (справжні паралельні запити)
-init_db.py            — створення таблиць зі schema.sql
+init_db.py            — створення таблиць з db/migrations/001_schema.sql
 run.py                — запуск сервера
 ```
 
@@ -163,7 +164,7 @@ docker compose up --build       API: http://localhost:4567/health, докуме�
 Файли:
 * `Dockerfile` — двоетапна збірка образу API (python:3.15-slim, користувач без root, read-only).
 * `docker-compose.yml` — сервіси `web` (API) і `db` (PostgreSQL 18), мережа `backend`, том `pgdata`,
-  healthcheck, обмеження ресурсів. Схема БД (`docs/schema.sql`) виконується при першому запуску.
+  healthcheck, обмеження ресурсів. Схема БД (`db/migrations/001_schema.sql`) виконується при першому запуску.
 * `docker-compose.dev.yml` — для розробки: автоперезапуск при зміні коду, БД на `127.0.0.1:5433`:
   `docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build`.
 * `.env.example` — зразок змінних оточення (`.env` з паролями — у `.gitignore`).
@@ -182,3 +183,24 @@ docker compose down -v          зупинити і видалити дані Б
 powershell -ExecutionPolicy Bypass -File .\run-docker.ps1 -Test load     (smoke | load | stress | spike | endurance)
 ```
 Результати — у `tests/performance-tests/reports/docker` (baseline лаб. 2 — у `reports`).
+
+## Реплікація PostgreSQL (лаб. 4)
+Логічна реплікація: `db` — publisher (master), `db_replica` — subscriber (slave).
+* `db/migrations/` — схема БД, виконується на обох серверах (логічна реплікація не переносить DDL).
+* `db/replications/common/500_orchestrate.sh` — єдиний скрипт у `/docker-entrypoint-initdb.d`:
+  виконує файли з `db/migrations`, потім з `db/replications/<роль>` (`*.sql` і `*.sh` за абеткою).
+* `db/replications/publisher/` — користувач `repuser`, публікація `tp_pub`, рядок у `pg_hba.conf`.
+* `db/replications/subscriber/` — очікування publisher і підписка `tp_sub`.
+
+Скрипти ініціалізації виконуються лише на порожній БД, тому перед першим запуском:
+```
+docker compose down -v
+docker compose up -d --build
+```
+Перевірка (master — `traveler_db`, slave — `traveler_db_replica`, також доступний на `localhost:55432`):
+```
+docker exec -it traveler_db psql -U traveler -d traveler
+docker exec -it traveler_db_replica psql -U traveler -d traveler
+Get-Content tests\replication\compare.sql | docker exec -i traveler_db_replica psql -U traveler -d traveler
+```
+k6 з окремою папкою результатів: `.\run-docker.ps1 -Test load -ReportDir reports\logical`.
