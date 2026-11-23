@@ -9,6 +9,7 @@ x-postgres: &postgres
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     REPLICATION_USER: ${REPLICATION_USER:?Set REPLICATION_USER in .env}
     REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?Set REPLICATION_PASSWORD in .env}
+    POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
   command:
     - "postgres"
     - "-c"
@@ -23,6 +24,8 @@ x-postgres: &postgres
     - "max_worker_processes=10"
     - "-c"
     - "hot_standby=on"
+    - "-c"
+    - "password_encryption=scram-sha-256"
   networks:
     - backend
   healthcheck:
@@ -67,7 +70,7 @@ services:
       - pgdata_replica:/var/lib/postgresql
       - ./db/replications/standby:/docker-entrypoint-replications:ro
     ports:
-      - "55432:5432"
+      - "127.0.0.1:55432:5432"
     depends_on:
       db:
         condition: service_healthy
@@ -90,7 +93,7 @@ services:
       DB_POOL_MIN: ${DB_POOL_MIN:-2}
       DB_POOL_MAX: ${DB_POOL_MAX:-20}
     ports:
-      - "${APP_PORT:-4567}:4567"
+      - "127.0.0.1:${APP_PORT:-4567}:4567"
     depends_on:
       db:
         condition: service_healthy

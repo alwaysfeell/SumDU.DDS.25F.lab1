@@ -199,12 +199,19 @@ powershell -ExecutionPolicy Bypass -File .\run-docker.ps1 -Test load     (smoke 
 див. `.env.example`), у скриптах і `docker-compose.yml` їх немає. Скрипти читають змінні оточення
 (`\getenv` у psql, `$REPLICATION_USER` у bash).
 
+Мережевий доступ:
+* назовні Docker опубліковано лише API (`127.0.0.1:4567`) і репліку (`127.0.0.1:55432`), обидва тільки на loopback;
+  primary (`db`) порт не публікує, до нього звертаються лише контейнери мережі `backend`;
+* `pg_hba.conf` (`020_pg_hba.sh`): рядок образу `host all all all` замінено на `host all all samenet`,
+  реплікація — `host replication <REPLICATION_USER> samenet`, усюди `scram-sha-256`;
+  `POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256` прибирає `trust` для 127.0.0.1 усередині контейнера.
+
 Скрипти ініціалізації виконуються лише на порожній БД, тому перед першим запуском:
 ```
 docker compose down -v
 docker compose up -d --build
 ```
-Перевірка (master — `traveler_db`, slave — `traveler_db_replica`, також доступний на `localhost:55432`):
+Перевірка (master — `traveler_db`, slave — `traveler_db_replica`, також доступний на `127.0.0.1:55432`):
 ```
 docker exec -it traveler_db psql -U traveler -d traveler
 docker exec -it traveler_db_replica psql -U traveler -d traveler
