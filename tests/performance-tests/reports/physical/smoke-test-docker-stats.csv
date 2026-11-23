@@ -1,0 +1,25 @@
+time,elapsed_s,container,cpu_percent,mem_usage_mb,mem_limit_mb,mem_percent,net_io,block_io,pids
+17:23:02,2,traveler_db,0.04,40,1024,3.91,114kB / 50MB,51.1MB / 94.3MB,12
+17:23:02,2,traveler_db_replica,0.03,26,1024,2.54,49.9MB / 64.6kB,1.99MB / 67.4MB,8
+17:23:02,2,traveler_web,0.49,53.5,512,10.45,7.17kB / 6.49kB,15.6MB / 0B,6
+17:23:07,7,traveler_db,0.45,42.4,1024,4.14,122kB / 50MB,51.1MB / 94.4MB,12
+17:23:07,7,traveler_db_replica,0.08,25.8,1024,2.52,49.9MB / 66.2kB,2.01MB / 67.4MB,8
+17:23:07,7,traveler_web,0.86,53.4,512,10.42,16.3kB / 17.2kB,15.6MB / 0B,6
+17:23:13,12,traveler_db,0.26,42.2,1024,4.12,136kB / 50MB,51.1MB / 94.8MB,12
+17:23:13,12,traveler_db_replica,0.03,25.8,1024,2.52,49.9MB / 67.5kB,2.01MB / 67.5MB,8
+17:23:13,12,traveler_web,0.77,53.4,512,10.43,35.6kB / 40.1kB,15.6MB / 0B,6
+17:23:18,17,traveler_db,0.35,42.2,1024,4.13,158kB / 50MB,51.1MB / 94.9MB,12
+17:23:18,17,traveler_db_replica,0.10,25.6,1024,2.50,49.9MB / 71.3kB,2.01MB / 67.5MB,8
+17:23:18,17,traveler_web,1.08,53.6,512,10.48,59.7kB / 68.6kB,15.6MB / 0B,6
+17:23:23,22,traveler_db,0.23,42.4,1024,4.14,180kB / 50.1MB,51.1MB / 95MB,12
+17:23:23,22,traveler_db_replica,0.20,26.3,1024,2.56,49.9MB / 74.1kB,2.01MB / 67.7MB,8
+17:23:23,22,traveler_web,0.90,53.9,512,10.53,93.4kB / 108kB,15.6MB / 0B,6
+17:23:28,27,traveler_db,0.11,42.4,1024,4.14,191kB / 50.1MB,51.1MB / 95MB,12
+17:23:28,27,traveler_db_replica,0.00,26.1,1024,2.55,50MB / 76.6kB,2.02MB / 68MB,8
+17:23:28,27,traveler_web,0.22,54.1,512,10.57,110kB / 127kB,15.6MB / 0B,6
+17:23:33,32,traveler_db,0.01,42.2,1024,4.12,191kB / 50.1MB,51.1MB / 95MB,12
+17:23:33,32,traveler_db_replica,0.00,26.5,1024,2.59,50MB / 76.6kB,2.02MB / 68MB,8
+17:23:33,32,traveler_web,0.05,54.1,512,10.57,111kB / 129kB,15.6MB / 0B,6
+17:23:38,37,traveler_db,0.01,42.7,1024,4.17,192kB / 50.1MB,51.1MB / 95MB,12
+17:23:38,37,traveler_db_replica,0.00,26.2,1024,2.56,50MB / 76.7kB,2.02MB / 68MB,8
+17:23:38,37,traveler_web,0.06,54,512,10.55,112kB / 129kB,15.6MB / 0B,6

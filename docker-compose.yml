@@ -12,15 +12,15 @@ x-postgres: &postgres
     - "-c"
     - "listen_addresses=*"
     - "-c"
-    - "wal_level=logical"
+    - "wal_level=replica"
     - "-c"
     - "max_replication_slots=10"
     - "-c"
     - "max_wal_senders=10"
     - "-c"
-    - "max_logical_replication_workers=4"
-    - "-c"
     - "max_worker_processes=10"
+    - "-c"
+    - "hot_standby=on"
   networks:
     - backend
   healthcheck:
@@ -51,17 +51,21 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql
       - ./db/migrations:/docker-entrypoint-migrations:ro
-      - ./db/replications/publisher:/docker-entrypoint-replications:ro
+      - ./db/replications/primary:/docker-entrypoint-replications:ro
       - ./db/replications/common:/docker-entrypoint-initdb.d:ro
 
   db_replica:
     <<: *postgres
     container_name: traveler_db_replica
+    entrypoint: ["bash", "/docker-entrypoint-replications/entrypoint.sh"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      REPLICA_NAME: replica1
     volumes:
       - pgdata_replica:/var/lib/postgresql
-      - ./db/migrations:/docker-entrypoint-migrations:ro
-      - ./db/replications/subscriber:/docker-entrypoint-replications:ro
-      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
+      - ./db/replications/standby:/docker-entrypoint-replications:ro
     ports:
       - "55432:5432"
     depends_on:
