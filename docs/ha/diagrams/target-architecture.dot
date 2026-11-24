@@ -1,0 +1,77 @@
+digraph G {
+  graph [fontname="Liberation Sans", fontsize=17, rankdir=TB, nodesep=0.45, ranksep=0.55, pad=0.3, bgcolor=white, compound=true, splines=true, newrank=true];
+  node  [fontname="Liberation Sans", fontsize=15, shape=box, style="rounded,filled", penwidth=1.4, margin="0.18,0.08", width=2.6];
+  LEG [shape=plaintext, style="", label=<<TABLE BORDER="0" CELLSPACING="2"><TR><TD ALIGN="LEFT"><FONT COLOR="#c0392b">━━ запис</FONT></TD></TR><TR><TD ALIGN="LEFT"><FONT COLOR="#2c6fb7">╌╌ читання (якщо реплік немає → primary)</FONT></TD></TR><TR><TD ALIGN="LEFT">━━ реплікація WAL</TD></TR><TR><TD ALIGN="LEFT"><FONT COLOR="#c58b00">━━ etcd / ключ лідера</FONT></TD></TR></TABLE>>];
+  {rank=same; USERS; LEG;}
+  edge  [fontname="Liberation Sans", fontsize=13, color="#333333", penwidth=1.2];
+
+  USERS [label="Користувачі (HTTPS)", fillcolor="#eeeeee", color="#666666"];
+  LB [label="DigitalOcean Load Balancer\n(керований провайдером, HA)", fillcolor="#e8f1fb", color="#2c6fb7"];
+
+  subgraph cluster_apps {
+    label="Рівень застосунку: 2 Droplet (2 vCPU / 2 GB)"; labelloc=b; style="rounded,filled"; fillcolor="#f5f9ff"; color="#2c6fb7";
+    subgraph cluster_a1 { label="app-1"; style="rounded"; color="#7aa6d8";
+      W1 [label="TravelerAPI\nUvicorn, кілька workers", fillcolor="#e8f1fb", color="#2c6fb7"];
+      H1 [label="HAProxy (sidecar)\n:5000 запис → /primary\n:5001 читання → /replica?lag=1MB\n(backup для читання → /primary)", fillcolor="#e8f1fb", color="#2c6fb7"];
+    }
+    subgraph cluster_a2 { label="app-2"; style="rounded"; color="#7aa6d8";
+      W2 [label="TravelerAPI\nUvicorn, кілька workers", fillcolor="#e8f1fb", color="#2c6fb7"];
+      H2 [label="HAProxy (sidecar)\n:5000 запис → /primary\n:5001 читання → /replica?lag=1MB\n(backup для читання → /primary)", fillcolor="#e8f1fb", color="#2c6fb7"];
+    }
+  }
+
+  subgraph cluster_db {
+    label="PostgreSQL HA-кластер: 3 Droplet (2 vCPU / 4 GB), Patroni 4.1 + etcd"; labelloc=b; style="rounded,filled"; fillcolor="#f4fbf6"; color="#2e8b57";
+    subgraph cluster_n1 { label="db-1"; style="rounded"; color="#2e8b57";
+      PG1 [label="PostgreSQL 18\nLEADER (primary)", shape=cylinder, style=filled, fillcolor="#bfe6cb", color="#2e8b57", penwidth=2.5];
+      P1 [label="Patroni + watchdog\nREST API :8008", fillcolor="#e6f5ea", color="#2e8b57"];
+      E1 [label="etcd member 1", fillcolor="#fff4d6", color="#c58b00"];
+    }
+    subgraph cluster_n2 { label="db-2"; style="rounded"; color="#2e8b57";
+      PG2 [label="PostgreSQL 18\nreplica (quorum ANY 1)", shape=cylinder, style=filled, fillcolor="#e6f5ea", color="#2e8b57"];
+      P2 [label="Patroni + watchdog\nREST API :8008", fillcolor="#e6f5ea", color="#2e8b57"];
+      E2 [label="etcd member 2", fillcolor="#fff4d6", color="#c58b00"];
+    }
+    subgraph cluster_n3 { label="db-3"; style="rounded"; color="#2e8b57";
+      PG3 [label="PostgreSQL 18\nreplica (quorum ANY 1)", shape=cylinder, style=filled, fillcolor="#e6f5ea", color="#2e8b57"];
+      P3 [label="Patroni + watchdog\nREST API :8008", fillcolor="#e6f5ea", color="#2e8b57"];
+      E3 [label="etcd member 3", fillcolor="#fff4d6", color="#c58b00"];
+    }
+  }
+
+  BK  [label="DigitalOcean Spaces\npgBackRest: бекапи + архів WAL (PITR)", shape=cylinder, style=filled, fillcolor="#f1e8fb", color="#7a4fb7", width=3.2];
+  MON [label="Grafana Cloud (free tier)\nметрики й алерти, поза DigitalOcean", fillcolor="#f1e8fb", color="#7a4fb7", width=3.2];
+  ALR [label="healthchecks.io (dead man's switch)\n+ DO Uptime → Telegram / e-mail", fillcolor="#f1e8fb", color="#7a4fb7"];
+
+  USERS -> LB;
+  LB -> W1; LB -> W2;
+  W1 -> H1 [label=" localhost"]; W2 -> H2 [label=" localhost"];
+
+  H1 -> PG1 [color="#c0392b", penwidth=2.2];
+  H2 -> PG1 [color="#c0392b", penwidth=2.2];
+  H1 -> PG2 [style=dashed, color="#2c6fb7"];
+  H2 -> PG3 [style=dashed, color="#2c6fb7"];
+
+  PG1 -> PG2 [label="WAL, quorum", penwidth=3];
+  PG2 -> PG3 [style=invis];
+  PG1 -> PG3 [label="WAL, quorum", penwidth=3, constraint=false];
+
+  PG1 -> P1 [dir=back, arrowtail=none, style=dotted, label=" керує"];
+  PG2 -> P2 [dir=back, arrowtail=none, style=dotted, label=" керує"];
+  PG3 -> P3 [dir=back, arrowtail=none, style=dotted, label=" керує"];
+  P1 -> E1 [dir=both, color="#c58b00"];
+  P2 -> E2 [dir=both, color="#c58b00"];
+  P3 -> E3 [dir=both, color="#c58b00"];
+  E1 -> E2 [dir=both, color="#c58b00", label="Raft, кворум 2 з 3", fontcolor="#c58b00"];
+  E1 -> E3 [dir=both, color="#c58b00"];
+  {rank=same; W1; W2;}
+  {rank=same; H1; H2;}
+  {rank=same; PG1; PG2; PG3;}
+  {rank=same; P1; P2; P3;}
+  {rank=same; E1; E2; E3;}
+
+  E1 -> BK [ltail=cluster_db, label=" archive_command (WAL)"];
+  E3 -> MON [ltail=cluster_db, dir=back, style=dashed, color="#7a4fb7", fontcolor="#7a4fb7", label=" агенти Grafana Alloy: Patroni, etcd,\n postgres_exporter, HAProxy, node"];
+  MON -> ALR [style=dashed, color="#7a4fb7"];
+  {rank=same; BK; MON;}
+}

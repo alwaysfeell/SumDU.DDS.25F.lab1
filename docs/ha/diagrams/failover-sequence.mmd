@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    participant APP as TravelerAPI + HAProxy
+    participant N1 as db-1 (лідер)
+    participant ETCD as etcd (3 вузли)
+    participant N2 as db-2 (quorum)
+    participant N3 as db-3 (quorum)
+    Note over N1: t = 0: Droplet db-1 вимкнувся
+    N1--xETCD: ключ не продовжується
+    APP->>N1: GET /primary (кожні 2 с)
+    Note over APP,N1: 2 невдалі перевірки: db-1 DOWN
+    Note over APP,N3: читання без перерви: :5001 → db-2, db-3
+    Note over ETCD: t = 20–30 с: TTL минув
+    ETCD-->>N2: watch: ключ зник
+    ETCD-->>N3: watch: ключ зник
+    N2->>ETCD: я в /sync, LSN найбільший
+    N3->>ETCD: LSN менший, не претендую
+    N2->>ETCD: створити ключ: успіх
+    N2->>N2: promote
+    N3->>N2: реплікація з db-2
+    N2->>ETCD: /sync: quorum = [db-3]
+    APP->>N2: GET /primary = 200
+    Note over APP,N1: t ≈ 22–45 с: запис через db-2
+    Note over N1,ETCD: потім db-1: pg_rewind → репліка
