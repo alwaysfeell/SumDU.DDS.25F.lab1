@@ -1,0 +1,32 @@
+digraph G {
+  graph [fontname="Liberation Sans", fontsize=16, rankdir=TB, nodesep=0.6, ranksep=0.7, pad=0.3, bgcolor=white];
+  node  [fontname="Liberation Sans", fontsize=15, shape=box, style="rounded,filled", fillcolor="#e8f1fb", color="#2c6fb7", penwidth=1.5, margin="0.2,0.12"];
+  edge  [fontname="Liberation Sans", fontsize=13, color="#333333", penwidth=1.3];
+
+  CLIENT [label="Клієнти\nk6, Hurl, браузер"];
+  ADMIN  [label="Адміністратор\npsql, docker exec"];
+
+  subgraph cluster_host {
+    label="Один фізичний хост: Windows 11 + Docker Desktop   (SPOF)"; labelloc=b; fontcolor="#c0392b";
+    style="dashed,filled"; fillcolor="#fff7e6"; color="#c0392b"; penwidth=2;
+    subgraph cluster_net {
+      label="Docker-мережа backend (bridge)"; fontcolor="#333333";
+      style="filled"; fillcolor="white"; color="#888888"; penwidth=1;
+      WEB [label="traveler_web\nFastAPI + Uvicorn, 1 процес\npsycopg_pool 2–20\nDATABASE_URL: host=db", fillcolor="#fde2e2", color="#c0392b"];
+      DB  [label="traveler_db\nPostgreSQL 18.6\nPRIMARY: read + write", shape=cylinder, fillcolor="#fde2e2", color="#c0392b", style="filled"];
+      REP [label="traveler_db_replica\nPostgreSQL 18.6\nhot standby: read-only", shape=cylinder, fillcolor="#fde2e2", color="#c0392b", style="filled"];
+      {rank=same; DB; REP;}
+    }
+    V1 [label="том pgdata", shape=folder, fillcolor="#f1e8fb", color="#7a4fb7", style="filled"];
+    V2 [label="том pgdata_replica", shape=folder, fillcolor="#f1e8fb", color="#7a4fb7", style="filled"];
+    {rank=same; V1; V2;}
+  }
+  {rank=same; CLIENT; ADMIN;}
+
+  CLIENT -> WEB [label="  HTTP 127.0.0.1:4567"];
+  WEB -> DB [label="  SQL: усі читання і записи\n  db:5432"];
+  DB -> REP [label="синхронна реплікація WAL\nFIRST 1 (replica1)\nслот replica1_slot", penwidth=3];
+  ADMIN -> REP [label="  127.0.0.1:55432", style=dashed];
+  DB -> V1 [arrowhead=none, style=dotted];
+  REP -> V2 [arrowhead=none, style=dotted];
+}
