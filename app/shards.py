@@ -5,15 +5,17 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from uuid import UUID, uuid4
 
+from psycopg import errors as pg_errors
 from psycopg.conninfo import make_conninfo
 from psycopg.rows import dict_row
-from psycopg_pool import ConnectionPool
+from psycopg_pool import ConnectionPool, PoolClosed
 
 from app.config import APP_DB_PASSWORD, APP_DB_USER, SHARD_MAPPING, SHARD_POOL_MAX, SHARD_POOL_MIN
 
 log = logging.getLogger("traveler.shards")
 
 SHARD_KEYS = tuple("0123456789abcdef")
+RELOAD_ERRORS = (pg_errors.InsufficientPrivilege, PoolClosed)
 
 
 def shard_key(entity_id) -> str:
@@ -119,8 +121,17 @@ class ShardRouter:
         with self._lock:
             return self._pools[key]
 
-    def run(self, key: str, work):
-        with self.pool(key).connection() as conn:
+    def run(self, key: str, work, timeout: float | None = None):
+        try:
+            return self._run_once(key, work, timeout)
+        except RELOAD_ERRORS as exc:
+            log.warning("Shard %s (%s): %s, reloading shard mapping",
+                        key, self.describe(key), str(exc).strip().splitlines()[0])
+            self.reload()
+            return self._run_once(key, work, timeout)
+
+    def _run_once(self, key: str, work, timeout: float | None):
+        with self.pool(key).connection(timeout=timeout) as conn:
             return work(conn)
 
     def submit(self, fn, *args):

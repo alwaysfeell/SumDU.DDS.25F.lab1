@@ -88,3 +88,17 @@ def print_table(headers: list[str], rows: list[list]) -> None:
     print(line)
     for row in cells[1:]:
         print("  ".join(v.ljust(w) for v, w in zip(row, widths)))
+
+
+class FileStore:
+    name = "mapping file"
+
+    def load(self) -> dict:
+        return load_doc()
+
+    def move_shard(self, key: str, node: str) -> int:
+        doc = load_doc()
+        doc["shards"][key]["node"] = node
+        doc["version"] = int(doc.get("version", 0)) + 1
+        save_doc(doc)
+        return doc["version"]

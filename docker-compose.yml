@@ -18,6 +18,16 @@ x-postgres: &postgres
     - "password_encryption=scram-sha-256"
     - "-c"
     - "max_prepared_transactions=32"
+    - "-c"
+    - "wal_level=logical"
+    - "-c"
+    - "max_replication_slots=16"
+    - "-c"
+    - "max_wal_senders=16"
+    - "-c"
+    - "max_logical_replication_workers=8"
+    - "-c"
+    - "max_worker_processes=16"
   networks:
     - backend
   healthcheck:
@@ -152,6 +162,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB_USER: ${APP_DB_USER}
       SHARD_MAPPING: /work/shards/mapping.json
     volumes:
       - ./:/work

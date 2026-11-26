@@ -10,11 +10,14 @@ router = APIRouter(tags=["Health"])
 STARTED_AT = time.monotonic()
 
 
+def _probe(conn) -> None:
+    conn.execute("SELECT 1 FROM travel_plans LIMIT 1")
+
+
 def _check_shard(key: str) -> dict:
     started = time.perf_counter()
     try:
-        with shards.pool(key).connection(timeout=2) as conn:
-            conn.execute("SELECT 1")
+        shards.run(key, _probe, timeout=2)
         status = "healthy"
     except Exception:
         status = "unhealthy"

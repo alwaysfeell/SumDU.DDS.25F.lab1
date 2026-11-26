@@ -227,3 +227,24 @@ docker compose run --rm tools pending                                    нез�
 спочатку `PREPARE TRANSACTION` на кожній БД, і лише після успіху на всіх — `COMMIT PREPARED`.
 Для цього вузли запускаються з `max_prepared_transactions=32`. Файли з `BEGIN`/`COMMIT` інструмент не приймає,
 а команди, які не можна виконувати в транзакції (`CREATE INDEX CONCURRENTLY`, `VACUUM`), завершаться помилкою і відкатом.
+
+### Ре-балансування: перенесення БД між вузлами
+```
+docker compose run --rm tools move db_7 --to postgres_00        перенести db_7 на postgres_00
+docker compose run --rm tools drop-old db_7 --node postgres_01  видалити стару копію після переносу
+```
+Алгоритм `move` (вузли працюють з `wal_level=logical`):
+1. `CREATE DATABASE` на цільовому вузлі, копія схеми (`pg_dump --schema-only | psql`), `CREATE PUBLICATION ... FOR ALL TABLES`
+   у старій БД і `CREATE SUBSCRIPTION ... WITH (copy_data = true)` у новій.
+2. Очікування, поки всі таблиці підписки перейдуть у стан `r` (ready) у `pg_subscription_rel`.
+3. `LOCK TABLE ... IN EXCLUSIVE MODE` у старій БД: запис блокується, читання триває. Очікування, поки слот реплікації
+   підтвердить `pg_current_wal_lsn()`, і перевірка кількості рядків та md5 усіх таблиць на обох вузлах.
+4. `DROP SUBSCRIPTION`: репліка стає самостійною (master).
+5. Оновлення `shards/mapping.json` (атомарний запис через тимчасовий файл і `os.replace`, `version + 1`).
+6. `REVOKE ALL ON ALL TABLES IN SCHEMA public FROM <APP_DB_USER>` у старій БД і `COMMIT`, що знімає блокування.
+7. Застосунок, отримавши `permission denied` (SQLSTATE 42501), перечитує mapping, закриває пул до старої БД
+   і повторює запит у новій. `/health` звертається до таблиці кожного шарду, тому mapping перечитується
+   не пізніше ніж за 30 с навіть без трафіку.
+
+Якщо щось пішло не так до кроку 5, інструмент видаляє підписку, публікацію, слот і нову БД, mapping не змінюється.
+Перевірка без простою: у другому вікні запустити `k6 run tests/sharding/rebalance-load.js` і під час тесту виконати `move`.

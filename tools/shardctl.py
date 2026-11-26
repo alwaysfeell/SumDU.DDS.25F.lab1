@@ -2,8 +2,9 @@ import argparse
 import sys
 
 from tools.apply import apply_file, pending
-from tools.common import load_doc, resolve
+from tools.common import FileStore, load_doc, resolve, shard_arg
 from tools.overview import query_all, status
+from tools.rebalance import drop_old, move
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -22,11 +23,27 @@ def build_parser() -> argparse.ArgumentParser:
     group = p.add_mutually_exclusive_group()
     group.add_argument("--commit", action="store_true")
     group.add_argument("--rollback", action="store_true")
+
+    p = sub.add_parser("move", help="move a shard database to another node with logical replication")
+    p.add_argument("shard", type=shard_arg, help="0..f or db_0..db_f")
+    p.add_argument("--to", required=True, dest="node", help="target node, e.g. postgres_00")
+    p.add_argument("--sync-timeout", type=float, default=300)
+    p.add_argument("--lock-timeout", type=int, default=10)
+
+    p = sub.add_parser("drop-old", help="drop the old copy of a moved shard")
+    p.add_argument("shard", type=shard_arg)
+    p.add_argument("--node", required=True)
+    p.add_argument("--force", action="store_true")
     return parser
 
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
+    store = FileStore()
+    if args.command == "move":
+        return move(args.shard, args.node, store, args.sync_timeout, args.lock_timeout)
+    if args.command == "drop-old":
+        return drop_old(args.shard, args.node, store, args.force)
     doc = load_doc()
     mapping = resolve(doc)
     if args.command == "apply":
