@@ -16,6 +16,8 @@ x-postgres: &postgres
     - "listen_addresses=*"
     - "-c"
     - "password_encryption=scram-sha-256"
+    - "-c"
+    - "max_prepared_transactions=32"
   networks:
     - backend
   healthcheck:
@@ -139,6 +141,24 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+
+  # shardctl: docker compose run --rm tools <command>
+  tools:
+    build:
+      context: ./tools
+      dockerfile: Dockerfile
+    image: traveler-tools:lab6
+    profiles: ["tools"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SHARD_MAPPING: /work/shards/mapping.json
+    volumes:
+      - ./:/work
+    networks:
+      - backend
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   pgdata_00:

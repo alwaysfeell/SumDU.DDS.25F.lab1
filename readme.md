@@ -212,3 +212,18 @@ docker compose ps
 curl.exe http://127.0.0.1:4567/health
 ```
 k6 з окремою папкою результатів: `.\run-docker.ps1 -Test load -ReportDir reports\sharding`.
+
+### shardctl: SQL на всіх 16 БД
+CLI-інструмент запускається в окремому контейнері `tools` (образ на основі `postgres:18-alpine` з Python, psycopg, `psql` і `pg_dump`),
+який бачить вузли через мережу `backend` і читає `shards/mapping.json`:
+```
+docker compose run --rm tools apply tests/sharding/tool-check-ok.sql     DDL/DML на всіх 16 БД
+docker compose run --rm tools query "SELECT count(*) FROM travel_plans"  read-only запит на всіх 16 БД
+docker compose run --rm tools status                                     мапінг і кількість рядків у кожному шарді
+docker compose run --rm tools pending                                    незавершені prepared-транзакції
+```
+`apply` відкриває з'єднання з кожною з 16 БД, починає транзакцію і виконує весь файл. Якщо хоч на одній БД сталася помилка,
+транзакції відкочуються на всіх. Якщо файл виконався на всіх 16, застосовується двофазний commit:
+спочатку `PREPARE TRANSACTION` на кожній БД, і лише після успіху на всіх — `COMMIT PREPARED`.
+Для цього вузли запускаються з `max_prepared_transactions=32`. Файли з `BEGIN`/`COMMIT` інструмент не приймає,
+а команди, які не можна виконувати в транзакції (`CREATE INDEX CONCURRENTLY`, `VACUUM`), завершаться помилкою і відкатом.
