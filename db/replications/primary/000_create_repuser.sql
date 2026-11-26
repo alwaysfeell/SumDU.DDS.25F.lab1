@@ -1,4 +1,0 @@
-\getenv repuser REPLICATION_USER
-\getenv reppass REPLICATION_PASSWORD
-
-CREATE ROLE :"repuser" WITH LOGIN REPLICATION PASSWORD :'reppass';

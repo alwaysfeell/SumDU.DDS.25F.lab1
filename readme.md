@@ -108,7 +108,7 @@ DELETE /api/locations/{id}                 # Delete location
 app/
   main.py             — створення FastAPI, підключення роутерів, заголовки безпеки
   config.py           — налаштування з .env
-  database.py         — пул з'єднань з PostgreSQL
+  shards.py           — маршрутизація запитів по 16 шардах, окремий пул з'єднань для кожного
   schemas.py          — Pydantic-моделі (валідація запитів)
   errors.py           — єдиний формат помилок, коди 400/404/409/500
   utils.py            — перетворення рядків БД у JSON, безпечна побудова SET
@@ -117,9 +117,9 @@ app/
     locations.py      — локації (автонумерація з блокуванням плану)
     health.py         — /health
 docs/                 — схема БД, Swagger
-db/                   — міграції (db/migrations) і сценарії реплікації (db/replications)
+db/                   — міграції (db/migrations) і ініціалізація вузлів-шардів (db/shards)
+shards/mapping.json   — шард → вузол і база даних
 tests/                — Hurl-тести + concurrency_test.py (справжні паралельні запити)
-init_db.py            — створення таблиць з db/migrations/001_schema.sql
 run.py                — запуск сервера
 ```
 
@@ -129,7 +129,6 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env        (і вписати пароль від PostgreSQL)
-python init_db.py
 python run.py
 ```
 Тести (в іншому терміналі):
@@ -184,37 +183,32 @@ powershell -ExecutionPolicy Bypass -File .\run-docker.ps1 -Test load     (smoke 
 ```
 Результати — у `tests/performance-tests/reports/docker` (baseline лаб. 2 — у `reports`).
 
-## Реплікація PostgreSQL (лаб. 4)
-Синхронна фізична (потокова) реплікація: `db` — primary (master), `db_replica` — hot standby (slave, лише читання).
-* `db/migrations/` — схема БД, виконується лише на primary (фізична реплікація переносить усі зміни, включно з DDL).
-* `db/replications/common/500_orchestrate.sh` — єдиний скрипт у `/docker-entrypoint-initdb.d`:
-  виконує файли з `db/migrations`, потім з `db/replications/primary` (`*.sql` і `*.sh` за абеткою).
-* `db/replications/primary/` — користувач реплікації з правом REPLICATION і рядок `host replication` у `pg_hba.conf`;
-  `030_synchronous_replication.sql` — `synchronous_standby_names = 'FIRST 1 (replica1)'`, `synchronous_commit = on`:
-  COMMIT на primary завершується лише після запису WAL на репліці. Якщо репліка зупинена, запис на primary чекає.
-* `db/replications/standby/entrypoint.sh` — при першому запуску створює слот `<REPLICA_NAME>_slot` на primary
-  і копіює дані через `pg_basebackup -R` (standby.signal + primary_conninfo), далі стандартний запуск PostgreSQL.
+## Шардування (лаб. 6)
+Замість одного сервера PostgreSQL працюють 4 вузли, на кожному по 4 бази даних:
 
-Логін і пароль користувача реплікації задаються в `.env` (`REPLICATION_USER`, `REPLICATION_PASSWORD`,
-див. `.env.example`), у скриптах і `docker-compose.yml` їх немає. Скрипти читають змінні оточення
-(`\getenv` у psql, `$REPLICATION_USER` у bash).
+| Вузол | Контейнер | Бази даних |
+|---|---|---|
+| `postgres_00` | `traveler_postgres_00` | `db_0` … `db_3` |
+| `postgres_01` | `traveler_postgres_01` | `db_4` … `db_7` |
+| `postgres_02` | `traveler_postgres_02` | `db_8` … `db_b` |
+| `postgres_03` | `traveler_postgres_03` | `db_c` … `db_f` |
 
-Мережевий доступ:
-* назовні Docker опубліковано лише API (`127.0.0.1:4567`) і репліку (`127.0.0.1:55432`), обидва тільки на loopback;
-  primary (`db`) порт не публікує, до нього звертаються лише контейнери мережі `backend`;
-* `pg_hba.conf` (`020_pg_hba.sh`): рядок образу `host all all all` замінено на `host all all samenet`,
-  реплікація — `host replication <REPLICATION_USER> samenet`, усюди `scram-sha-256`;
-  `POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256` прибирає `trust` для 127.0.0.1 усередині контейнера.
+* Шард визначається останнім символом UUID: план `…7` зберігається в `db_7`.
+* `shards/mapping.json` — для кожного з 16 шардів вузол і назва БД; адреси вузлів — у розділі `nodes`.
+  Логін і пароль однакові для всіх 16 БД і задаються лише в `.env` (`APP_DB_USER`, `APP_DB_PASSWORD`).
+* UUID нового плану генерує застосунок (`uuid4`), а не БД, бо шард треба знати до INSERT.
+* UUID локації генерується з тим самим останнім символом, що й у плану, тому локація лежить в одній БД
+  з планом, а `PUT/DELETE /api/locations/{id}` маршрутизуються за id самої локації.
+* `GET /api/travel-plans` опитує всі 16 БД паралельно і об'єднує результат за `updated_at`.
+* `db/shards/010_init_shards.sh` при першому запуску вузла створює користувача застосунку (без SUPERUSER),
+  бази зі змінної `SHARD_DATABASES`, права за замовчуванням і застосовує `db/migrations/*.sql` до кожної БД;
+  `020_pg_hba.sh` дозволяє мережеві підключення лише з `samenet` через `scram-sha-256`.
 
-Скрипти ініціалізації виконуються лише на порожній БД, тому перед першим запуском:
+Перший запуск (скрипти ініціалізації виконуються лише на порожніх томах):
 ```
 docker compose down -v
 docker compose up -d --build
+docker compose ps
+curl.exe http://127.0.0.1:4567/health
 ```
-Перевірка (master — `traveler_db`, slave — `traveler_db_replica`, також доступний на `127.0.0.1:55432`):
-```
-docker exec -it traveler_db psql -U traveler -d traveler
-docker exec -it traveler_db_replica psql -U traveler -d traveler
-Get-Content tests\replication\compare.sql | docker exec -i traveler_db_replica psql -U traveler -d traveler
-```
-k6 з окремою папкою результатів: `.\run-docker.ps1 -Test load -ReportDir reports\physical` (асинхронна), `reports\sync` (синхронна).
+k6 з окремою папкою результатів: `.\run-docker.ps1 -Test load -ReportDir reports\sharding`.

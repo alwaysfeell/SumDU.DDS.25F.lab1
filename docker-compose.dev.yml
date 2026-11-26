@@ -1,7 +1,19 @@
 services:
-  db:
+  postgres_00:
     ports:
-      - "127.0.0.1:${DB_HOST_PORT:-5433}:5432"
+      - "127.0.0.1:54320:5432"
+
+  postgres_01:
+    ports:
+      - "127.0.0.1:54321:5432"
+
+  postgres_02:
+    ports:
+      - "127.0.0.1:54322:5432"
+
+  postgres_03:
+    ports:
+      - "127.0.0.1:54323:5432"
 
   web:
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "4567", "--reload"]

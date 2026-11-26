@@ -4,32 +4,22 @@ x-postgres: &postgres
   image: postgres:18-alpine
   restart: unless-stopped
   environment: &postgres-env
-    POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    POSTGRES_DB: postgres
     POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-    REPLICATION_USER: ${REPLICATION_USER:?Set REPLICATION_USER in .env}
-    REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?Set REPLICATION_PASSWORD in .env}
+    APP_DB_USER: ${APP_DB_USER:?Set APP_DB_USER in .env}
+    APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD in .env}
     POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
   command:
     - "postgres"
     - "-c"
     - "listen_addresses=*"
     - "-c"
-    - "wal_level=replica"
-    - "-c"
-    - "max_replication_slots=10"
-    - "-c"
-    - "max_wal_senders=10"
-    - "-c"
-    - "max_worker_processes=10"
-    - "-c"
-    - "hot_standby=on"
-    - "-c"
     - "password_encryption=scram-sha-256"
   networks:
     - backend
   healthcheck:
-    test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+    test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d postgres"]
     interval: 10s
     timeout: 5s
     retries: 5
@@ -49,31 +39,50 @@ x-postgres: &postgres
     - no-new-privileges:true
 
 services:
-  # PostgreSQL
-  db:
+  # PostgreSQL: 4 nodes x 4 shard databases
+  postgres_00:
     <<: *postgres
-    container_name: traveler_db
-    volumes:
-      - pgdata:/var/lib/postgresql
-      - ./db/migrations:/docker-entrypoint-migrations:ro
-      - ./db/replications/primary:/docker-entrypoint-replications:ro
-      - ./db/replications/common:/docker-entrypoint-initdb.d:ro
-
-  db_replica:
-    <<: *postgres
-    container_name: traveler_db_replica
-    entrypoint: ["bash", "/docker-entrypoint-replications/entrypoint.sh"]
+    container_name: traveler_postgres_00
     environment:
       <<: *postgres-env
-      REPLICA_NAME: replica1
+      SHARD_DATABASES: "db_0 db_1 db_2 db_3"
     volumes:
-      - pgdata_replica:/var/lib/postgresql
-      - ./db/replications/standby:/docker-entrypoint-replications:ro
-    ports:
-      - "127.0.0.1:55432:5432"
-    depends_on:
-      db:
-        condition: service_healthy
+      - pgdata_00:/var/lib/postgresql
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/shards:/docker-entrypoint-initdb.d:ro
+
+  postgres_01:
+    <<: *postgres
+    container_name: traveler_postgres_01
+    environment:
+      <<: *postgres-env
+      SHARD_DATABASES: "db_4 db_5 db_6 db_7"
+    volumes:
+      - pgdata_01:/var/lib/postgresql
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/shards:/docker-entrypoint-initdb.d:ro
+
+  postgres_02:
+    <<: *postgres
+    container_name: traveler_postgres_02
+    environment:
+      <<: *postgres-env
+      SHARD_DATABASES: "db_8 db_9 db_a db_b"
+    volumes:
+      - pgdata_02:/var/lib/postgresql
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/shards:/docker-entrypoint-initdb.d:ro
+
+  postgres_03:
+    <<: *postgres
+    container_name: traveler_postgres_03
+    environment:
+      <<: *postgres-env
+      SHARD_DATABASES: "db_c db_d db_e db_f"
+    volumes:
+      - pgdata_03:/var/lib/postgresql
+      - ./db/migrations:/docker-entrypoint-migrations:ro
+      - ./db/shards:/docker-entrypoint-initdb.d:ro
 
   # TravelerAPI
   web:
@@ -83,19 +92,29 @@ services:
       target: runtime
       args:
         PYTHON_VERSION: ${PYTHON_VERSION:-3.15}
-    image: traveler-api:lab3
+    image: traveler-api:lab6
     container_name: traveler_web
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       HOST: 0.0.0.0
       PORT: "4567"
-      DB_POOL_MIN: ${DB_POOL_MIN:-2}
-      DB_POOL_MAX: ${DB_POOL_MAX:-20}
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      SHARD_MAPPING: /app/shards/mapping.json
+      SHARD_POOL_MIN: ${SHARD_POOL_MIN:-1}
+      SHARD_POOL_MAX: ${SHARD_POOL_MAX:-10}
+    volumes:
+      - ./shards:/app/shards:ro
     ports:
       - "127.0.0.1:${APP_PORT:-4567}:4567"
     depends_on:
-      db:
+      postgres_00:
+        condition: service_healthy
+      postgres_01:
+        condition: service_healthy
+      postgres_02:
+        condition: service_healthy
+      postgres_03:
         condition: service_healthy
     networks:
       - backend
@@ -122,8 +141,10 @@ services:
       - /tmp
 
 volumes:
-  pgdata:
-  pgdata_replica:
+  pgdata_00:
+  pgdata_01:
+  pgdata_02:
+  pgdata_03:
 
 networks:
   backend:

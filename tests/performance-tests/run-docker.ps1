@@ -12,7 +12,7 @@
 
 $ErrorActionPreference = 'Continue'
 $inv = [System.Globalization.CultureInfo]::InvariantCulture
-$required = @('traveler_web', 'traveler_db')
+$required = @('traveler_web', 'traveler_postgres_00', 'traveler_postgres_01', 'traveler_postgres_02', 'traveler_postgres_03')
 
 function Say([string]$text, [string]$color = 'Gray') { Write-Host $text -ForegroundColor $color }
 function Fail([string]$text) { Write-Host $text -ForegroundColor Red; exit 1 }

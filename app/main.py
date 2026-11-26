@@ -3,23 +3,23 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 
-from app.database import pool
 from app.errors import register_error_handlers
 from app.routers import health, locations, travel_plans
+from app.shards import shards
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    pool.open()
+    shards.open()
     yield
-    pool.close()
+    shards.close()
 
 
 app = FastAPI(
     title="TravelerAPI",
-    description="REST API для колаборативного планування подорожей (PostgreSQL, optimistic locking)",
+    description="REST API для колаборативного планування подорожей (PostgreSQL, 16 шардів, optimistic locking)",
     version="1.0.0",
     lifespan=lifespan,
 )
