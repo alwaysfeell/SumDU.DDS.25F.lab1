@@ -20,7 +20,7 @@ def query_all(text: str, mapping: dict) -> int:
     return 0
 
 
-def status(mapping: dict, version) -> int:
+def status(mapping: dict, version, source: str) -> int:
     rows, total_plans, total_locations = [], 0, 0
     for key in SHARD_KEYS:
         target = mapping[key]
@@ -37,7 +37,7 @@ def status(mapping: dict, version) -> int:
         except Exception as exc:
             rows.append([key, target["node"], target["dbname"], f"{target['host']}:{target['port']}",
                          "-", "-", "ERROR: " + str(exc).strip().splitlines()[0]])
-    print(f"Mapping version: {version}")
+    print(f"Mapping: {source}, version {version}")
     print_table(["shard", "node", "database", "address", "plans", "locations", "state"], rows)
     print(f"Total: {total_plans} plans, {total_locations} locations")
     return 0

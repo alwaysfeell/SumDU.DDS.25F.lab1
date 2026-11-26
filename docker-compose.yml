@@ -97,7 +97,7 @@ services:
       - ./db/shards:/docker-entrypoint-initdb.d:ro
 
   # TravelerAPI
-  web:
+  web: &web
     build:
       context: .
       dockerfile: Dockerfile
@@ -113,6 +113,7 @@ services:
       APP_DB_USER: ${APP_DB_USER}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
       SHARD_MAPPING: /app/shards/mapping.json
+      SHARD_REGISTRY: ${SHARD_REGISTRY:-}
       SHARD_POOL_MIN: ${SHARD_POOL_MIN:-1}
       SHARD_POOL_MAX: ${SHARD_POOL_MAX:-10}
     volumes:
@@ -152,6 +153,13 @@ services:
     tmpfs:
       - /tmp
 
+  web_2:
+    <<: *web
+    container_name: traveler_web_2
+    profiles: ["scale"]
+    ports:
+      - "127.0.0.1:${APP_PORT_2:-4568}:4567"
+
   # shardctl: docker compose run --rm tools <command>
   tools:
     build:
@@ -164,6 +172,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       APP_DB_USER: ${APP_DB_USER}
       SHARD_MAPPING: /work/shards/mapping.json
+      SHARD_REGISTRY: ${SHARD_REGISTRY:-}
     volumes:
       - ./:/work
     networks:

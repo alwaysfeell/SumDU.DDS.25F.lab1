@@ -248,3 +248,19 @@ docker compose run --rm tools drop-old db_7 --node postgres_01  видалити
 
 Якщо щось пішло не так до кроку 5, інструмент видаляє підписку, публікацію, слот і нову БД, mapping не змінюється.
 Перевірка без простою: у другому вікні запустити `k6 run tests/sharding/rebalance-load.js` і під час тесту виконати `move`.
+
+### Реєстр сховищ даних
+Щоб кілька екземплярів API бачили однаковий mapping, його можна перенести з локального файлу в спільну БД
+`shard_registry` (таблиця `shard_map`), яка є на всіх чотирьох вузлах і реплікується логічною реплікацією:
+перший вузол зі списку `SHARD_REGISTRY` — primary (публікація `shard_registry_pub`), решта — підписки на нього.
+```
+SHARD_REGISTRY=postgres_00,postgres_01,postgres_02,postgres_03      у .env
+docker compose run --rm tools registry init      створити реєстр із shards/mapping.json
+docker compose run --rm tools registry show      вміст реєстру на кожному вузлі
+docker compose up -d web                         API читає mapping із реєстру
+docker compose --profile scale up -d web_2       другий екземпляр API на 127.0.0.1:4568
+```
+API читає `shard_map` з випадкового доступного вузла (якщо вузол недоступний — з наступного).
+`move` у цьому режимі змінює рядок на primary і чекає, поки зміна дійде до всіх реплік, і лише потім відкликає права
+у старій БД, тому кожен екземпляр після помилки 42501 отримує вже новий mapping. Файл `shards/mapping.json`
+тоді використовується лише для початкового заповнення реєстру і списку вузлів.

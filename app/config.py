@@ -11,6 +11,9 @@ PORT = int(os.getenv("PORT", "4567"))
 SHARD_MAPPING = os.getenv(
     "SHARD_MAPPING", str(Path(__file__).resolve().parent.parent / "shards" / "mapping.json")
 )
+SHARD_REGISTRY = [h.strip() for h in os.getenv("SHARD_REGISTRY", "").split(",") if h.strip()]
+SHARD_REGISTRY_DB = os.getenv("SHARD_REGISTRY_DB", "shard_registry")
+
 APP_DB_USER = os.getenv("APP_DB_USER", "traveler_app")
 APP_DB_PASSWORD = os.getenv("APP_DB_PASSWORD", "")
 

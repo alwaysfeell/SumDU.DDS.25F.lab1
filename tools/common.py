@@ -93,6 +93,9 @@ def print_table(headers: list[str], rows: list[list]) -> None:
 class FileStore:
     name = "mapping file"
 
+    def __init__(self):
+        self.name = f"mapping file {mapping_path()}"
+
     def load(self) -> dict:
         return load_doc()
 

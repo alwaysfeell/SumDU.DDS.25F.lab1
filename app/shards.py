@@ -1,16 +1,26 @@
 import json
 import logging
+import random
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from uuid import UUID, uuid4
 
+import psycopg
 from psycopg import errors as pg_errors
 from psycopg.conninfo import make_conninfo
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool, PoolClosed
 
-from app.config import APP_DB_PASSWORD, APP_DB_USER, SHARD_MAPPING, SHARD_POOL_MAX, SHARD_POOL_MIN
+from app.config import (
+    APP_DB_PASSWORD,
+    APP_DB_USER,
+    SHARD_MAPPING,
+    SHARD_POOL_MAX,
+    SHARD_POOL_MIN,
+    SHARD_REGISTRY,
+    SHARD_REGISTRY_DB,
+)
 
 log = logging.getLogger("traveler.shards")
 
@@ -49,6 +59,34 @@ def load_mapping_file(path: str = SHARD_MAPPING) -> dict:
     return mapping
 
 
+def _split_address(address: str) -> tuple[str, int]:
+    host, _, port = address.partition(":")
+    return host, int(port or 5432)
+
+
+def load_mapping_registry(hosts: list[str] = SHARD_REGISTRY) -> dict:
+    errors = []
+    for address in random.sample(hosts, len(hosts)):
+        host, port = _split_address(address)
+        try:
+            with psycopg.connect(host=host, port=port, dbname=SHARD_REGISTRY_DB, user=APP_DB_USER,
+                                 password=APP_DB_PASSWORD, connect_timeout=3,
+                                 application_name="traveler-api-registry", row_factory=dict_row) as conn:
+                rows = conn.execute("SELECT shard, node, host, port, dbname FROM shard_map").fetchall()
+        except psycopg.Error as exc:
+            errors.append(f"{address}: {str(exc).strip().splitlines()[0]}")
+            continue
+        mapping = {r["shard"]: {"node": r["node"], "host": r["host"], "port": int(r["port"]),
+                                "dbname": r["dbname"]} for r in rows}
+        missing = [key for key in SHARD_KEYS if key not in mapping]
+        if missing:
+            errors.append(f"{address}: no entries for shards {', '.join(missing)}")
+            continue
+        log.info("Shard mapping read from registry %s", address)
+        return {key: mapping[key] for key in SHARD_KEYS}
+    raise RuntimeError("Shard registry is not available: " + "; ".join(errors))
+
+
 class ShardRouter:
     def __init__(self, loader):
         self._loader = loader
@@ -59,7 +97,8 @@ class ShardRouter:
 
     def open(self) -> None:
         self.reload()
-        log.info("Shard mapping loaded: %s",
+        source = f"registry {','.join(SHARD_REGISTRY)}" if SHARD_REGISTRY else SHARD_MAPPING
+        log.info("Shard mapping loaded from %s: %s", source,
                  ", ".join(f"{k}={self.describe(k)}" for k in SHARD_KEYS))
 
     def close(self) -> None:
@@ -142,4 +181,4 @@ class ShardRouter:
         return {key: future.result() for key, future in futures.items()}
 
 
-shards = ShardRouter(load_mapping_file)
+shards = ShardRouter(load_mapping_registry if SHARD_REGISTRY else load_mapping_file)
