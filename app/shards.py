@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -12,6 +13,7 @@ from psycopg.conninfo import make_conninfo
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool, PoolClosed
 
+from app import metrics
 from app.config import (
     APP_DB_PASSWORD,
     APP_DB_USER,
@@ -164,14 +166,31 @@ class ShardRouter:
         try:
             return self._run_once(key, work, timeout)
         except RELOAD_ERRORS as exc:
+            metrics.MAPPING_RELOADS.inc()
             log.warning("Shard %s (%s): %s, reloading shard mapping",
                         key, self.describe(key), str(exc).strip().splitlines()[0])
             self.reload()
             return self._run_once(key, work, timeout)
 
     def _run_once(self, key: str, work, timeout: float | None):
-        with self.pool(key).connection(timeout=timeout) as conn:
-            return work(conn)
+        started = time.perf_counter()
+        outcome = "ok"
+        try:
+            with self.pool(key).connection(timeout=timeout) as conn:
+                return work(conn)
+        except psycopg.Error:
+            outcome = "db_error"
+            raise
+        except Exception:
+            outcome = "aborted"
+            raise
+        finally:
+            metrics.observe_shard(key, outcome, time.perf_counter() - started)
+
+    def pool_stats(self) -> list[tuple[str, str, dict]]:
+        with self._lock:
+            items = [(key, self._targets[key]["node"], pool) for key, pool in self._pools.items()]
+        return [(key, node, pool.get_stats()) for key, node, pool in items]
 
     def submit(self, fn, *args):
         return self._executor.submit(fn, *args)
