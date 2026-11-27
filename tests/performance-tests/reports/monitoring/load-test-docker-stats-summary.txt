@@ -1,0 +1,19 @@
+﻿============================================================================================================
+DOCKER STATS — load-test   (2026-11-27 15:31:21 – 15:49:10, k6 exit code 99)
+============================================================================================================
+Середовище: Docker 29.9.1, Docker Desktop, доступно Docker: 16 CPU, 7.7 GB RAM
+Заміри: кожні 5 с, файл reports\monitoring\load-test-docker-stats.csv
+CPU % — як у docker stats: 100% = одне повне ядро.
+
+Контейнер               Замірів    CPU avg    CPU max    RAM старт   RAM кінець      RAM max    Ліміт RAM PIDs max
+------------------------------------------------------------------------------------------------------------
+traveler_grafana            214       2.7%      12.8%     137.1 MB     142.9 MB     143.2 MB       512 MB       14
+traveler_postgres_00        214       3.5%      11.4%      59.3 MB     173.3 MB     174.3 MB      1024 MB       49
+traveler_postgres_01        214         2%       9.3%      45.8 MB     107.6 MB     108.1 MB      1024 MB       33
+traveler_postgres_02        214       3.6%      12.3%      55.6 MB     168.1 MB     169.2 MB      1024 MB       53
+traveler_postgres_03        214         2%       8.9%      44.9 MB     108.2 MB     109.6 MB      1024 MB       34
+traveler_prometheus         214       4.1%      11.9%      46.4 MB      45.4 MB      57.6 MB       512 MB        6
+traveler_web                214      57.1%     139.8%      88.8 MB     158.6 MB     189.2 MB       512 MB      138
+
+Підсумок k6: reports\monitoring\load-test-summary.txt, графіки: reports\monitoring\load-test-dashboard.html
+============================================================================================================
