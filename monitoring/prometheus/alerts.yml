@@ -1,0 +1,51 @@
+groups:
+  - name: traveler-api
+    rules:
+      - alert: TravelerApiDown
+        expr: up{job="traveler-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "TravelerAPI {{ $labels.instance }} is not responding"
+          description: "Prometheus cannot scrape /metrics for more than 30 seconds."
+
+      - alert: TravelerHighErrorRate
+        expr: |
+          sum by (instance) (rate(traveler_http_requests_total{status=~"5.."}[1m]))
+            / sum by (instance) (rate(traveler_http_requests_total[1m])) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "More than 5% of requests to {{ $labels.instance }} fail with 5xx"
+          description: "Current 5xx share: {{ $value | humanizePercentage }}."
+
+      - alert: TravelerHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (instance, le) (rate(traveler_http_request_duration_seconds_bucket[1m]))) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 response time of {{ $labels.instance }} is above 500 ms"
+          description: "Current p95: {{ $value | humanizeDuration }}."
+
+      - alert: TravelerShardPoolExhausted
+        expr: max by (instance, shard) (max_over_time(traveler_shard_pool_requests_waiting[1m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Requests wait for a connection to shard {{ $labels.shard }}"
+          description: "The pool of shard {{ $labels.shard }} has no free connections; consider SHARD_POOL_MAX."
+
+      - alert: TravelerShardDatabaseErrors
+        expr: sum by (instance, shard) (rate(traveler_shard_queries_total{outcome="db_error"}[1m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database errors in shard {{ $labels.shard }}"
+          description: "{{ $value | humanize }} failed transactions per second."

@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+  scrape_timeout: 4s
+  evaluation_interval: 5s
+
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  - job_name: traveler-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["web:4567"]
+        labels:
+          instance: web
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
